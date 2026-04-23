@@ -10,6 +10,14 @@ Change history for claude-code-harness.
 
 #### Phase 52: upstream update skill merge hardening + 2026-04-21 snapshot
 
+| Before | After |
+|--------|-------|
+| `cc-update-review` が diff 未提供でも進行し、`B: 書いただけ 0 件` を推定で断言する余地があった | diff source が呼び出し元提供または read-only git inspection で確定しているかを前提チェックで強制 |
+| `claude-codex-upstream-update` は必ず `A` を作る前提で、C/P 中心の回でも無理な wrapper を書きがちだった | 公式差分が妥当に `C` / `P` だけなら no-op adaptation で完了できる契約に変更 |
+| upstream 分類の見出しが `3 カテゴリ` / `A/B/C` / `A/B/C/P` で揺れていた | `A/B/C/P` に統一し、integration test で grep 固定 |
+| upstream skill 2 種の `skills/` / `codex/.codex/skills/` / `.agents/skills/` mirror drift が test で検出されなかった | `tests/test-claude-upstream-integration.sh` に mirror drift + snapshot 参照整合 check を追加 |
+| upstream cycle の判断経緯が CHANGELOG / Feature Table に要約するだけで、一次情報と version-by-version の根拠が残らなかった | `docs/upstream-update-snapshot-2026-04-21.md` に URL・分解表・no-op 根拠・follow-up を恒久化 |
+
 **公式確認**: Claude Code docs / GitHub changelog で `2.1.116` を確認し、Codex releases で stable `0.122.0` と pre-release `0.123.0-alpha.2` を確認した。
 
 **Version-by-version 分解**:

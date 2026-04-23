@@ -150,7 +150,7 @@ Codex `0.122.0` 以降で確認する項目:
 - `A`: 実装対象の hook / settings / Go / script / skill と、対象 unit test または `tests/test-claude-upstream-integration.sh`
 - `P`: `Plans.md` と必要なら調査 snapshot docs
 - `C`: `docs/CLAUDE-feature-table.md` または CHANGELOG に、Harness 変更不要な理由を短く記録
-- Skill 自体を直した場合: `skills/`, `codex/.codex/skills/`, `.agents/skills/` の mirror を同期し、drift test を更新
+- Skill 自体を直した場合: `skills/`, `codex/.codex/skills/`, `.agents/skills/` の mirror を同期し、drift test を更新し、直後に `/reload-plugins` を実行して runtime cache を更新する
 
 書き方の基準:
 
