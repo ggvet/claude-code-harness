@@ -277,9 +277,9 @@ var Rules = []GuardRule{
 		},
 	},
 
-	// R12: deny direct push to protected branch
+	// R12: configurable direct push policy for protected branches
 	{
-		ID:          "R12:deny-direct-push-protected-branch",
+		ID:          "R12:confirm-direct-push-protected-branch",
 		ToolPattern: regexp.MustCompile(`^Bash$`),
 		Evaluate: func(ctx hookproto.RuleContext) *hookproto.HookResult {
 			command, ok := ctx.Input.ToolInput["command"].(string)
@@ -289,9 +289,20 @@ var Rules = []GuardRule{
 			if !hasDirectPushToProtectedBranch(command) {
 				return nil
 			}
-			return &hookproto.HookResult{
-				Decision: hookproto.DecisionDeny,
-				Reason:   "main/master への直接 push は禁止されています。feature branch 経由で PR を作成してください。",
+
+			switch normalizeProtectedBranchPushPolicy(ctx.ProtectedBranchPushPolicy) {
+			case protectedBranchPushPolicyDeny:
+				return &hookproto.HookResult{
+					Decision: hookproto.DecisionDeny,
+					Reason:   "main/master への直接 push は設定で禁止されています。feature branch 経由で PR を作成してください。",
+				}
+			case protectedBranchPushPolicyAllow:
+				return nil
+			default:
+				return &hookproto.HookResult{
+					Decision: hookproto.DecisionAsk,
+					Reason:   "main/master への直接 push です。ユーザー確認後に実行しますか？（設定: protected_branch_push=ask）",
+				}
 			}
 		},
 	},

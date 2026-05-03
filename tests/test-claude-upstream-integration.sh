@@ -942,6 +942,143 @@ grep -q '56.2.4 .* cc:完了' "${ROOT_DIR}/Plans.md" || {
   exit 1
 }
 
+# Phase 58: Claude Code 2.1.120-2.1.126 / Codex 0.125.0-0.128.0 snapshot and follow-up planning
+PHASE58_SNAPSHOT_DOC="${ROOT_DIR}/docs/upstream-update-snapshot-2026-05-03.md"
+[ -f "${PHASE58_SNAPSHOT_DOC}" ] || {
+  echo "${PHASE58_SNAPSHOT_DOC} does not exist"
+  exit 1
+}
+PHASE58_FOLLOWUP_DOC="${ROOT_DIR}/docs/upstream-followups-phase58-2026-05-03.md"
+[ -f "${PHASE58_FOLLOWUP_DOC}" ] || {
+  echo "${PHASE58_FOLLOWUP_DOC} does not exist"
+  exit 1
+}
+for referencing_file in \
+  "${ROOT_DIR}/CHANGELOG.md" \
+  "${ROOT_DIR}/docs/CLAUDE-feature-table.md" \
+  "${ROOT_DIR}/Plans.md"; do
+  grep -q 'upstream-update-snapshot-2026-05-03' "${referencing_file}" || {
+    echo "${referencing_file} is missing the expected upstream-update-snapshot-2026-05-03 reference"
+    exit 1
+  }
+done
+grep -q 'https://code.claude.com/docs/en/changelog' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must include the Claude Code docs changelog URL"
+  exit 1
+}
+grep -q 'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must include the Claude Code GitHub changelog URL"
+  exit 1
+}
+grep -q 'https://github.com/openai/codex/releases' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must include the OpenAI Codex releases URL"
+  exit 1
+}
+grep -q 'Claude Code `2.1.126`' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must include Claude Code 2.1.126"
+  exit 1
+}
+grep -q 'Codex `0.125.0` stable' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must include Codex 0.125.0 stable"
+  exit 1
+}
+grep -q 'Codex `0.128.0` stable' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must include Codex 0.128.0 stable"
+  exit 1
+}
+grep -q 'Codex `0.129.0-alpha.2` pre-release' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must include Codex 0.129.0-alpha.2 pre-release"
+  exit 1
+}
+grep -q 'hookSpecificOutput.updatedToolOutput' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must classify PostToolUse updatedToolOutput"
+  exit 1
+}
+grep -q -- '--dangerously-skip-permissions' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must classify dangerously-skip-permissions protected write changes"
+  exit 1
+}
+grep -q 'allowManagedDomainsOnly' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must classify managed sandbox precedence hardening"
+  exit 1
+}
+grep -q 'codex exec --json` reports reasoning-token usage' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must classify codex exec JSON reasoning-token usage"
+  exit 1
+}
+grep -q 'plugin-bundled hooks' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must classify Codex plugin-bundled hooks"
+  exit 1
+}
+grep -q 'B: 書いただけ 0 件の理由' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must explain why B is zero"
+  exit 1
+}
+grep -q 'alpha から推測実装しない' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must forbid speculative alpha implementation"
+  exit 1
+}
+grep -q 'docs/upstream-followups-phase58-2026-05-03.md' "${PHASE58_SNAPSHOT_DOC}" || {
+  echo "Phase 58 snapshot must link to the follow-up decisions doc"
+  exit 1
+}
+grep -q '既定では tool output を書き換えない' "${PHASE58_FOLLOWUP_DOC}" || {
+  echo "Phase 58 follow-up doc must preserve no-default-output-mutation"
+  exit 1
+}
+grep -q '即時に `.claude/` 全体 deny はしない' "${PHASE58_FOLLOWUP_DOC}" || {
+  echo "Phase 58 follow-up doc must avoid over-broad .claude deny"
+  exit 1
+}
+grep -q -- '--full-auto` を新規 docs の default として増やさない' "${PHASE58_FOLLOWUP_DOC}" || {
+  echo "Phase 58 follow-up doc must avoid new --full-auto defaults"
+  exit 1
+}
+grep -q 'Phase 58 Claude Code 2.1.120-2.1.126 / Codex 0.125.0-0.128.0 snapshot' "${ROOT_DIR}/docs/CLAUDE-feature-table.md" || {
+  echo "Feature Table must include the Phase 58 upstream snapshot row"
+  exit 1
+}
+grep -q 'Plans `58.1.1`-`58.3.2`' "${ROOT_DIR}/docs/CLAUDE-feature-table.md" || {
+  echo "Feature Table must link the Phase 58 row back to Plans 58.1.1-58.3.2"
+  exit 1
+}
+grep -q 'Phase 58: Claude Code 2.1.120-2.1.126 / Codex 0.125.0-0.128.0 upstream snapshot' "${ROOT_DIR}/CHANGELOG.md" || {
+  echo "CHANGELOG must include the Phase 58 upstream snapshot"
+  exit 1
+}
+grep -q 'docs/upstream-followups-phase58-2026-05-03.md' "${ROOT_DIR}/CHANGELOG.md" || {
+  echo "CHANGELOG must mention the Phase 58 follow-up decisions doc"
+  exit 1
+}
+grep -q 'protected path taxonomy' "${ROOT_DIR}/CHANGELOG.md" || {
+  echo "CHANGELOG must mention protected path taxonomy follow-up"
+  exit 1
+}
+grep -q '58.2.1 | Claude Code `--dangerously-skip-permissions`' "${ROOT_DIR}/Plans.md" || {
+  echo "Plans.md must keep the Phase 58 protected-write hardening task"
+  exit 1
+}
+grep -q '58.2.2 | Claude Code `PostToolUse` の `hookSpecificOutput.updatedToolOutput`' "${ROOT_DIR}/Plans.md" || {
+  echo "Plans.md must keep the Phase 58 updatedToolOutput governance task"
+  exit 1
+}
+grep -q '58.3.1 | Codex `0.125.0` / `0.128.0` の permission profiles' "${ROOT_DIR}/Plans.md" || {
+  echo "Plans.md must keep the Phase 58 Codex permission profile task"
+  exit 1
+}
+grep -q '58.3.2 | Codex `0.128.0` の plugin workflows' "${ROOT_DIR}/Plans.md" || {
+  echo "Plans.md must keep the Phase 58 Codex plugin workflow task"
+  exit 1
+}
+grep -q '58.1.1 .* cc:完了' "${ROOT_DIR}/Plans.md" || {
+  echo "Plans.md must mark 58.1.1 as complete"
+  exit 1
+}
+grep -q '58.1.2 .* cc:完了' "${ROOT_DIR}/Plans.md" || {
+  echo "Plans.md must mark 58.1.2 as complete"
+  exit 1
+}
+
 for hooks_file in "${HOOK_FILES[@]}"; do
   MCP_TOOL_COUNT="$(jq '[.. | objects | select(.type? == "mcp_tool")] | length' "${hooks_file}")"
   if [ "${MCP_TOOL_COUNT}" -eq 0 ]; then

@@ -277,7 +277,7 @@ Harness v4 protects your codebase with a **Go-native guardrail engine** (`go/int
 | R07–R09 | Mode-specific and secret-read guards | Context-aware |
 | R10 | `--no-verify`, `--no-gpg-sign` | **Deny** |
 | R11 | `git reset --hard main/master` | **Deny** |
-| R12 | Direct push to `main` / `master` | **Warn** |
+| R12 | Direct push to `main` / `master` | **Ask** by default (`ask` / `deny` / `allow`) |
 | R13 | Protected file edits | **Warn** |
 | Post | `it.skip`, assertion tampering | **Warning** |
 | Perm | `git status`, `npm test` | **Auto-allow** |

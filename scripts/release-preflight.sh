@@ -230,7 +230,7 @@ check_runtime_residuals() {
   fi
   if [ -n "$matches" ]; then
     warn "runtime residual scan"
-    printf '%s\n' "$matches" | head -20 | sed 's/^/  /'
+    sed -n '1,20p' <<<"$matches" | sed 's/^/  /'
   else
     pass "runtime residual scan"
   fi

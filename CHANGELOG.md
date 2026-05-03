@@ -6,11 +6,29 @@ Change history for claude-code-harness.
 
 ## [Unreleased]
 
+### Changed
+
+- Direct push to `main` / `master` now defaults to a user confirmation prompt instead of a hard block. Users can tune the guard with `safety.protected_branch_push` in `.claude-code-harness.config.yaml` or `protectedBranchPush` in `harness.toml` (`ask` / `deny` / `allow`).
+
 ### Fixed
 
 - Windows Git Bash/MSYS/Cygwin sessions now resolve `bin/harness-windows-amd64.exe` through the `bin/harness` shim, and `WorktreeCreate` uses platform path joining while rejecting hook decision JSON mistakenly supplied as a cwd. Windows builds also avoid Unix-only `syscall.Flock` calls by falling back to mkdir/no-lock behavior where appropriate. This keeps Breezing worktree isolation from falling back to Solo mode because the Windows hook binary or worktree state path cannot be resolved.
 
 ### Added
+
+- Phase 58 upstream tracking now covers Claude Code `2.1.120`-`2.1.126` and Codex `0.125.0` / `0.128.0` with a new snapshot and follow-up plan.
+
+#### Phase 58: Claude Code 2.1.120-2.1.126 / Codex 0.125.0-0.128.0 upstream snapshot
+
+**Snapshot**: `docs/upstream-update-snapshot-2026-05-03.md` に、2026-05-03 確認の Claude Code `2.1.120`, `2.1.121`, `2.1.122`, `2.1.123`, `2.1.126` と Codex `0.125.0` stable、`0.128.0` stable、`0.129.0-alpha.2` pre-release の一次情報 URL、version-by-version 分解表、A/C/P 判定、no-op adaptation の理由を保存した。
+
+**今まで**: Harness の upstream snapshot は Phase 56 の Claude Code `2.1.119` / Codex `0.124.0` までで止まっており、Claude Code の `--dangerously-skip-permissions` protected write 範囲拡大、`PostToolUse.updatedToolOutput`、Codex permission profiles / plugin-bundled hooks / MultiAgentV2 をまだ Phase 化していなかった。
+
+**今後**: Phase 58 は `docs/upstream-followups-phase58-2026-05-03.md` と Plans `58.2.1`-`58.3.2` に、protected path taxonomy、output governance、Claude setup / MCP / telemetry refresh、Codex permission profile migration、Codex plugin hooks / `/goal` / MultiAgentV2 follow-up を切り出す。Codex `0.129.0-alpha.2` は watch に留め、alpha compare から runtime を推測実装しない。
+
+| Before | After |
+|--------|-------|
+| Phase 56 以降の upstream 差分が Feature Table / Plans / tests に接続されていなかった | Phase 58 snapshot と follow-up doc を追加し、Claude Code 2.1.126 / Codex 0.128.0 の高価値差分を guarded implementation candidates として Plans 化 |
 
 - Windows Breezing worktree support now has regression coverage for shim platform mapping, `windows/amd64` build output, and the WorktreeCreate path contract.
 

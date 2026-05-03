@@ -177,7 +177,7 @@ seed_memory_context
 init_output="$(cd "${TMP_DIR}" && bash "${TMP_DIR}/scripts/session-init.sh")"
 init_context="$(printf '%s' "${init_output}" | jq -r '.hookSpecificOutput.additionalContext')"
 
-echo "${init_context}" | grep -q 'Continuity Briefing' || {
+grep -q 'Continuity Briefing' <<<"${init_context}" || {
   echo "session-init additionalContext is missing memory continuity briefing"
   exit 1
 }
@@ -196,7 +196,7 @@ seed_memory_context
 resume_output="$(cd "${TMP_DIR}" && bash "${TMP_DIR}/scripts/session-resume.sh")"
 resume_context="$(printf '%s' "${resume_output}" | jq -r '.hookSpecificOutput.additionalContext')"
 
-echo "${resume_context}" | grep -q 'Continuity Briefing' || {
+grep -q 'Continuity Briefing' <<<"${resume_context}" || {
   echo "session-resume additionalContext is missing memory continuity briefing"
   exit 1
 }

@@ -344,7 +344,7 @@ RECOVERING → ABORTED     (リカバリ失敗、人間介入必要)
 | R09 | Read | 機密ファイル (.env, id_rsa, *.pem, secrets/) | approve + warn | なし |
 | R10 | Bash | `--no-verify` / `--no-gpg-sign` | deny | なし |
 | R11 | Bash | protected branch への `git reset --hard` | deny | なし |
-| R12 | Bash | main/master への直接 push | approve + warn | なし |
+| R12 | Bash | main/master への直接 push | ask（設定で deny / allow 可） | `protected_branch_push` |
 | R13 | Write/Edit/MultiEdit | package.json, Dockerfile, workflow 等 | approve + warn | なし |
 
 テスト ID: `TestR01_*` 〜 `TestR13_*` (go/internal/guard/rules_test.go)

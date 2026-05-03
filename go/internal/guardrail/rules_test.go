@@ -465,17 +465,17 @@ func TestR11_ResetSoftMain(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// R12: deny direct push to protected branch (upgraded from warn in c101efc8)
+// R12: configurable direct push policy for protected branch
 // ---------------------------------------------------------------------------
 
 func TestR12_PushToMain(t *testing.T) {
 	ctx := makeCtx("Bash", map[string]interface{}{"command": "git push origin main"})
 	result := EvaluateRules(ctx)
-	if result.Decision != hookproto.DecisionDeny {
-		t.Errorf("expected deny, got %s", result.Decision)
+	if result.Decision != hookproto.DecisionAsk {
+		t.Errorf("expected ask, got %s", result.Decision)
 	}
 	if result.Reason == "" {
-		t.Error("expected deny reason for push to main")
+		t.Error("expected ask reason for push to main")
 	}
 }
 
@@ -493,11 +493,38 @@ func TestR12_PushToFeature(t *testing.T) {
 func TestR12_PushRefspecToMain(t *testing.T) {
 	ctx := makeCtx("Bash", map[string]interface{}{"command": "git push origin HEAD:main"})
 	result := EvaluateRules(ctx)
+	if result.Decision != hookproto.DecisionAsk {
+		t.Errorf("expected ask, got %s", result.Decision)
+	}
+	if result.Reason == "" {
+		t.Error("expected ask reason for refspec push to main")
+	}
+}
+
+func TestR12_PushToMainPolicyDeny(t *testing.T) {
+	ctx := makeCtx("Bash", map[string]interface{}{"command": "git push origin main"})
+	ctx.ProtectedBranchPushPolicy = "deny"
+	result := EvaluateRules(ctx)
 	if result.Decision != hookproto.DecisionDeny {
 		t.Errorf("expected deny, got %s", result.Decision)
 	}
-	if result.Reason == "" {
-		t.Error("expected deny reason for refspec push to main")
+}
+
+func TestR12_PushToMainPolicyAllow(t *testing.T) {
+	ctx := makeCtx("Bash", map[string]interface{}{"command": "git push origin main"})
+	ctx.ProtectedBranchPushPolicy = "allow"
+	result := EvaluateRules(ctx)
+	if result.Decision != hookproto.DecisionApprove {
+		t.Errorf("expected approve, got %s", result.Decision)
+	}
+}
+
+func TestR12_PushToMainInvalidPolicyDefaultsAsk(t *testing.T) {
+	ctx := makeCtx("Bash", map[string]interface{}{"command": "git push origin main"})
+	ctx.ProtectedBranchPushPolicy = "unexpected"
+	result := EvaluateRules(ctx)
+	if result.Decision != hookproto.DecisionAsk {
+		t.Errorf("expected ask, got %s", result.Decision)
 	}
 }
 

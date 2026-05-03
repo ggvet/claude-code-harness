@@ -107,7 +107,7 @@ Details: [docs/CLAUDE-commands.md](docs/CLAUDE-commands.md)
 | `.eslintrc*`, `eslint.config.*`, `biome.json`, `tsconfig*.json` | deny | 品質基準の保護 |
 | `.github/workflows/*` | deny | CI パイプラインの保護 |
 | `git push --force` | ask + R06 deny | 不可逆操作の防止 |
-| `git push origin main/master` | R12 deny | protected branch 保護 |
+| `git push origin main/master` | R12 ask（設定で deny / allow 可） | protected branch 保護 |
 | `git reset --hard` | ask + R11 deny | 不可逆操作の防止 |
 | `mcp__codex__*` | deny | Codex MCP 直接使用の防止 |
 

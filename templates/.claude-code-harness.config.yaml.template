@@ -50,6 +50,14 @@ cleanup:
 # When enabled, git commit is blocked until review is completed.
 commit_guard: true
 
+# Safety settings.
+safety:
+  # main/master direct push policy.
+  # ask: confirm with the user before pushing (default)
+  # deny: block direct pushes
+  # allow: allow direct pushes without Harness confirmation
+  protected_branch_push: ask
+
 # Context budget (estimated tooling overhead).
 context_budget:
   enabled: true

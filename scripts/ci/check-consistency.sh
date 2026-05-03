@@ -175,7 +175,7 @@ for target in "${START_TASK_TARGETS[@]}"; do
       || true)
     if [ -n "$REFS" ]; then
       echo "  ❌ /start-task 参照が残存: $target"
-      echo "$REFS" | head -3 | sed 's/^/      /'
+      sed -n '1,3p' <<<"$REFS" | sed 's/^/      /'
       START_TASK_FOUND=$((START_TASK_FOUND + 1))
     fi
   fi
@@ -207,7 +207,7 @@ for target in "${DOCS_TARGETS[@]}"; do
     REFS=$(grep -rn "proposal.md\|technical-spec.md\|priority_matrix.md" "$PLUGIN_ROOT/$target" 2>/dev/null | grep -v "docs/" | grep -v "\.template" || true)
     if [ -n "$REFS" ]; then
       echo "  ❌ docs/ プレフィックスなしの参照: $target"
-      echo "$REFS" | head -3 | sed 's/^/      /'
+      sed -n '1,3p' <<<"$REFS" | sed 's/^/      /'
       DOCS_ISSUES=$((DOCS_ISSUES + 1))
     fi
   fi
@@ -259,7 +259,7 @@ if [ -f "$SECURITY_TEMPLATE" ]; then
   if grep -nEq 'Bash[(][^)]*[^:][*]' "$SECURITY_TEMPLATE"; then
     echo "  ❌ settings.security.json.template に不正な Bash パーミッション構文が含まれています"
     echo "      prefix マッチングは :* を使用してください（例: Bash(git status:*)）"
-    grep -nE 'Bash[(][^)]*[^:][*]' "$SECURITY_TEMPLATE" | head -3 | sed 's/^/      /'
+    grep -nE 'Bash[(][^)]*[^:][*]' "$SECURITY_TEMPLATE" | sed -n '1,3p' | sed 's/^/      /'
     BYPASS_ISSUES=$((BYPASS_ISSUES + 1))
   else
     echo "  ✅ Bash パーミッション構文OK (:*)"
@@ -300,7 +300,7 @@ CCP_ISSUES=0
 CCP_NAMES=$(grep -rn "^name: ccp-" "$PLUGIN_ROOT/skills/" 2>/dev/null || true)
 if [ -n "$CCP_NAMES" ]; then
   echo "  ❌ skills に name: ccp-* が残存"
-  echo "$CCP_NAMES" | head -3 | sed 's/^/      /'
+  sed -n '1,3p' <<<"$CCP_NAMES" | sed 's/^/      /'
   CCP_ISSUES=$((CCP_ISSUES + 1))
 else
   echo "  ✅ skills に name: ccp-* なし"
@@ -310,7 +310,7 @@ fi
 CCP_WORKFLOWS=$(grep -rn "skill: ccp-" "$PLUGIN_ROOT/workflows/" 2>/dev/null || true)
 if [ -n "$CCP_WORKFLOWS" ]; then
   echo "  ❌ workflows に skill: ccp-* が残存"
-  echo "$CCP_WORKFLOWS" | head -3 | sed 's/^/      /'
+  sed -n '1,3p' <<<"$CCP_WORKFLOWS" | sed 's/^/      /'
   CCP_ISSUES=$((CCP_ISSUES + 1))
 else
   echo "  ✅ workflows に skill: ccp-* なし"
@@ -320,7 +320,7 @@ fi
 CCP_DIRS=$(find "$PLUGIN_ROOT/skills" -type d -name "ccp-*" 2>/dev/null || true)
 if [ -n "$CCP_DIRS" ]; then
   echo "  ❌ ccp-* ディレクトリが残存"
-  echo "$CCP_DIRS" | head -3 | sed 's/^/      /'
+  sed -n '1,3p' <<<"$CCP_DIRS" | sed 's/^/      /'
   CCP_ISSUES=$((CCP_ISSUES + 1))
 else
   echo "  ✅ ccp-* ディレクトリなし"
@@ -487,7 +487,7 @@ for changelog in "$PLUGIN_ROOT/CHANGELOG.md" "$PLUGIN_ROOT/CHANGELOG_ja.md"; do
   BAD_DATES=$(grep -nE '^\#\# \[[0-9]' "$changelog" | grep -vE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | grep -v "Unreleased" || true)
   if [ -n "$BAD_DATES" ]; then
     echo "  ❌ $cl_name: ISO 8601 日付でないエントリ"
-    echo "$BAD_DATES" | head -3 | sed 's/^/      /'
+    sed -n '1,3p' <<<"$BAD_DATES" | sed 's/^/      /'
     CHANGELOG_ISSUES=$((CHANGELOG_ISSUES + 1))
   fi
 
@@ -498,7 +498,7 @@ for changelog in "$PLUGIN_ROOT/CHANGELOG.md" "$PLUGIN_ROOT/CHANGELOG_ja.md"; do
     || true)
   if [ -n "$NON_STANDARD" ]; then
     echo "  ⚠️ $cl_name: 非標準セクション見出し（確認推奨）"
-    echo "$NON_STANDARD" | head -3 | sed 's/^/      /'
+    sed -n '1,3p' <<<"$NON_STANDARD" | sed 's/^/      /'
     # 警告のみ（エラーにはしない）
   fi
 
