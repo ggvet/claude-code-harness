@@ -6,6 +6,8 @@ Change history for claude-code-harness.
 
 ## [Unreleased]
 
+## [4.5.4] - 2026-05-04
+
 ### Fixed
 
 - CI i18n and skill-manifest regression tests now use the tracked public payload as their baseline, so clean checkouts no longer expect local-only private skills to be present.
@@ -3701,7 +3703,8 @@ Purpose: 自己修正ループ失敗時に「止まるだけ」から「次の�
 
 For v2.9.x and earlier, see [GitHub Releases](https://github.com/Chachamaru127/claude-code-harness/releases).
 
-[Unreleased]: https://github.com/Chachamaru127/claude-code-harness/compare/v4.5.3...HEAD
+[Unreleased]: https://github.com/Chachamaru127/claude-code-harness/compare/v4.5.4...HEAD
+[4.5.4]: https://github.com/Chachamaru127/claude-code-harness/compare/v4.5.3...v4.5.4
 [4.5.3]: https://github.com/Chachamaru127/claude-code-harness/compare/v4.5.2...v4.5.3
 [4.5.2]: https://github.com/Chachamaru127/claude-code-harness/compare/v4.5.1...v4.5.2
 [4.5.1]: https://github.com/Chachamaru127/claude-code-harness/compare/v4.5.0...v4.5.1
