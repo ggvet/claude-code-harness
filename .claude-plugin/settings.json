@@ -48,7 +48,13 @@
       "deniedDomains": [
         "169.254.169.254",
         "metadata.google.internal",
-        "metadata.azure.com"
+        "metadata.azure.com",
+        "0x0.st",
+        "ix.io",
+        "paste.ee",
+        "pastebin.com",
+        "termbin.com",
+        "transfer.sh"
       ]
     },
     "filesystem": {
