@@ -718,6 +718,12 @@ else
     fail_test "harness-plan-brief e2e の契約テストに失敗 — 'bash tests/test-plan-brief-e2e.sh' で詳細確認"
 fi
 
+if bash "$PLUGIN_ROOT/tests/test-plan-accept-flow-e2e.sh" > /dev/null 2>&1; then
+    pass_test "Phase 65.2.x Plan→Accept flow e2e がプラン→受入の完全 trace を user_request_hash で join します (test-plan-accept-flow-e2e.sh)"
+else
+    fail_test "Plan→Accept flow e2e の契約テストに失敗 — 'bash tests/test-plan-accept-flow-e2e.sh' で詳細確認"
+fi
+
 echo ""
 echo "=========================================="
 echo "テスト結果サマリー"
