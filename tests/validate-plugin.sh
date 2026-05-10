@@ -790,6 +790,12 @@ else
     fail_test "progress-past-judgments の契約テストに失敗 — 'bash tests/test-progress-past-judgments.sh' で詳細確認"
 fi
 
+if bash "$PLUGIN_ROOT/tests/test-progress-e2e.sh" > /dev/null 2>&1; then
+    pass_test "Phase 65.4.5 e2e: 初回 snapshot → 編集後再生成 → 5 alert 発火 → 過去判断表示 → rate limit が一貫して動作 (test-progress-e2e.sh)"
+else
+    fail_test "progress-e2e の契約テストに失敗 — 'bash tests/test-progress-e2e.sh' で詳細確認"
+fi
+
 echo ""
 echo "=========================================="
 echo "テスト結果サマリー"
