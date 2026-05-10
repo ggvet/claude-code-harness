@@ -62,8 +62,10 @@ All responses must be in **Japanese** (including `context: fork` skills).
 | harness-plan | Planning and task shaping into Plans.md | "plan", "break this down", "/plan-with-agent" |
 | harness-sync | Check alignment across Plans.md, git state, and implementation | "sync", "is this aligned?", "check drift" |
 | memory | SSOT management, memory search, SSOT promotion | "SSOT", "decisions.md", "memory search", "harness-mem" |
+| cognitive-load (Plan Brief / Progress / Accept) | 3 surface HTML for non-engineer vibecoder review (Phase 65) | "plan brief", "進捗確認", "受け入れ判断", "ship/wait/reject" |
 
 Skills are organized as flat directories under `skills/`, with Codex-specific variants in `skills-codex/`. Full catalog: [docs/CLAUDE-skill-catalog.md](docs/CLAUDE-skill-catalog.md)
+Cognitive-load 3 surface 詳細: [docs/cognitive-load-surfaces.md](docs/cognitive-load-surfaces.md) / Cross-project safety: [docs/cross-project-safety.md](docs/cross-project-safety.md)
 
 ## Development Flow
 
