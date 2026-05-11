@@ -69,6 +69,7 @@ skills/
 | harness-plan-brief | 着工前 Plan Brief HTML 生成 (Phase 65.1) | 「plan brief」「計画概要」「計画レビュー」 |
 | harness-accept | 引き渡し時 Acceptance Demo HTML 生成 (Phase 65.2) | 「受け入れ判断」「ship/wait/reject」「検収レビュー」 |
 | harness-progress | 進捗 Tracker HTML 生成 + 自動再生成 (Phase 65.4) | 「進捗確認」「進捗ボード」「dashboard」 |
+| harness-command-center | Project Command Center TOP HTML 生成 (Phase 65.6) — 3-panel mission control | 「プロジェクト全体」「ダッシュボード」「TOP 画面」「mission control」 |
 
 ## 開発用スキル（非公開）
 

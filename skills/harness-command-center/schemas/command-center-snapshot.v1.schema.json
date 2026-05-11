@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://claude-code-harness.local/schemas/command-center-snapshot.v1.schema.json",
+  "title": "command-center-snapshot.v1",
+  "description": "Project Command Center (TOP) の snapshot 構造体。harness-command-center skill が sibling projects + 現プロジェクトの状態 + 活動履歴を集約。renderer 制約 (top-level scalar + 1 階の {{#section}}) に合わせ、フラットな array 構造で持つ。",
+  "type": "object",
+  "required": [
+    "schema",
+    "active_project",
+    "active_project_subtitle",
+    "all_systems_status",
+    "all_systems_label",
+    "branch",
+    "head_short",
+    "session_short",
+    "active_phase_label",
+    "active_phase_subtitle",
+    "tasks_done",
+    "tasks_total",
+    "tasks_pct",
+    "latest_release",
+    "latest_release_date",
+    "cost_so_far_usd",
+    "cost_estimate_usd",
+    "cost_pct",
+    "projects_count",
+    "projects",
+    "active_sessions_count",
+    "active_sessions",
+    "current_session_title",
+    "current_session_subtitle",
+    "current_session_user_request_hash_short",
+    "pending_decisions_count",
+    "pending_decisions_message",
+    "activities",
+    "drift_alerts",
+    "velocity_commits_today",
+    "velocity_commits_yesterday",
+    "velocity_decisions_today",
+    "velocity_decisions_label",
+    "velocity_cost_today",
+    "audit_log_path",
+    "generated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "type": "string", "const": "command-center-snapshot.v1" },
+    "active_project": { "type": "string", "minLength": 1 },
+    "active_project_subtitle": { "type": "string" },
+    "all_systems_status": { "type": "string", "enum": ["green", "amber", "red"] },
+    "all_systems_label": { "type": "string" },
+    "branch": { "type": "string" },
+    "head_short": { "type": "string" },
+    "session_short": { "type": "string" },
+    "active_phase_label": { "type": "string" },
+    "active_phase_subtitle": { "type": "string" },
+    "tasks_done": { "type": "integer", "minimum": 0 },
+    "tasks_total": { "type": "integer", "minimum": 0 },
+    "tasks_pct": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "latest_release": { "type": "string" },
+    "latest_release_date": { "type": "string" },
+    "cost_so_far_usd": { "type": "number", "minimum": 0 },
+    "cost_estimate_usd": { "type": "number", "minimum": 0 },
+    "cost_pct": { "type": "integer", "minimum": 0, "maximum": 999 },
+    "projects_count": { "type": "integer", "minimum": 0 },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "is_active_label", "status_dot_class", "subtitle"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "is_active_label": { "type": "string", "description": "'ACTIVE NOW' or empty (template には #section で出すため判定済み文字列を入れる)" },
+          "status_dot_class": { "type": "string", "enum": ["coral", "green", "amber", "grey"] },
+          "subtitle": { "type": "string" }
+        }
+      }
+    },
+    "active_sessions_count": { "type": "integer", "minimum": 0 },
+    "active_sessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "session_id_short", "started_label", "progress_pct"],
+        "additionalProperties": false,
+        "properties": {
+          "title": { "type": "string" },
+          "session_id_short": { "type": "string" },
+          "started_label": { "type": "string" },
+          "progress_pct": { "type": "integer", "minimum": 0, "maximum": 100 }
+        }
+      }
+    },
+    "current_session_title": { "type": "string" },
+    "current_session_subtitle": { "type": "string" },
+    "current_session_user_request_hash_short": { "type": "string" },
+    "pending_decisions_count": { "type": "integer", "minimum": 0 },
+    "pending_decisions_message": { "type": "string" },
+    "activities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["time", "text", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "time": { "type": "string" },
+          "text": { "type": "string" },
+          "kind": { "type": "string", "enum": ["release", "accept", "milestone", "plan", "session", "info"] }
+        }
+      }
+    },
+    "drift_alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "count", "severity_class", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": { "type": "string" },
+          "count": { "type": "integer", "minimum": 0 },
+          "severity_class": { "type": "string", "enum": ["success", "caution", "danger"] },
+          "label": { "type": "string" }
+        }
+      }
+    },
+    "velocity_commits_today": { "type": "integer", "minimum": 0 },
+    "velocity_commits_yesterday": { "type": "integer", "minimum": 0 },
+    "velocity_decisions_today": { "type": "integer", "minimum": 0 },
+    "velocity_decisions_label": { "type": "string" },
+    "velocity_cost_today": { "type": "number", "minimum": 0 },
+    "audit_log_path": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" }
+  }
+}

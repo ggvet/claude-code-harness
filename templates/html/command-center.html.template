@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Claude Harness - Command Center: {{active_project}}</title>
+<style>
+  :root {
+    --coral-primary: #F97455;
+    --coral-soft:    #FCE5DD;
+    --coral-deep:    #C84F33;
+    --ink:           #1A1A1A;
+    --ink-muted:     #5C5C5C;
+    --ink-faint:     #9A9A9A;
+    --paper:         #FFFFFF;
+    --paper-warm:    #FDFBF7;
+    --border-soft:   #EDEDED;
+    --success:       #2D7A4F;
+    --caution:       #C68A1F;
+    --danger:        #B0392E;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .serif { font-family: 'Source Serif Pro', 'Tiempos Headline', Georgia, '游明朝', serif; }
+  .mono  { font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 13px; }
+  .label-caps { font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); }
+
+  /* Layout: 3-panel grid full bleed */
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(640px, 2fr) minmax(280px, 1fr);
+    gap: 16px;
+    padding: 16px;
+    min-height: 100vh;
+  }
+  .panel { background: var(--paper-warm); border: 1px solid var(--border-soft); border-radius: 8px; padding: 24px; }
+  .main  { background: var(--paper); border: 1px solid var(--border-soft); border-radius: 8px; padding: 32px; overflow: auto; }
+
+  /* Sidebar */
+  .sidebar-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .sidebar-logo { width: 28px; height: 28px; }
+  .sidebar-title { font-size: 18px; font-weight: 500; }
+  .sidebar-search {
+    width: 100%; padding: 10px 12px; margin: 16px 0;
+    background: var(--paper); border: 1px solid var(--border-soft); border-radius: 6px;
+    font-family: inherit; font-size: 14px; color: var(--ink);
+  }
+  .section-label { font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); margin: 16px 0 8px; }
+
+  /* Project list */
+  .project-row { padding: 12px; border-radius: 6px; margin-bottom: 4px; background: transparent; border-left: 3px solid transparent; }
+  .project-row.coral { background: var(--paper); border-left-color: var(--coral-primary); }
+  .project-row .name { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .project-row .sub  { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+  .dot.coral { background: var(--coral-primary); }
+  .dot.green { background: var(--success); }
+  .dot.amber { background: var(--caution); }
+  .dot.grey  { background: var(--ink-faint); }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 10px; letter-spacing: 0.05em; font-weight: 600;
+  }
+  .pill.coral   { background: var(--coral-soft); color: var(--coral-deep); }
+  .pill.success { background: #DDEEE3; color: var(--success); }
+  .pill.caution { background: #F8EDD2; color: var(--caution); }
+
+  /* Active session card in sidebar */
+  .session-card { background: var(--paper); border: 1px solid var(--border-soft); border-radius: 6px; padding: 12px; }
+  .progress-bar { height: 4px; background: var(--border-soft); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .progress-bar > i { display: block; height: 100%; background: var(--coral-primary); }
+
+  /* CTA */
+  .cta-secondary { display: block; width: 100%; padding: 14px; margin-top: 24px;
+    background: var(--paper); color: var(--ink); border: 1px solid var(--border-soft); border-radius: 6px;
+    font-size: 14px; font-weight: 500; text-align: center; cursor: pointer;
+  }
+  .cta-secondary:hover { background: var(--paper-warm); }
+
+  /* Main hero */
+  .hero h1 { font-size: 42px; font-weight: 400; letter-spacing: -0.01em; margin: 0 0 8px; line-height: 1.2; }
+  .hero .subtitle { font-size: 16px; color: var(--ink-muted); margin: 0; }
+  .hero-row { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #DDEEE3; color: var(--success);
+    padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  }
+
+  /* KPI band */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .kpi { background: var(--paper-warm); border: 1px solid var(--border-soft); border-radius: 8px; padding: 16px; }
+  .kpi .label { font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 8px; }
+  .kpi .value { font-size: 32px; font-weight: 600; line-height: 1; }
+  .kpi .value.coral { color: var(--coral-primary); }
+  .kpi .value.success { color: var(--success); }
+  .kpi .sub { font-size: 11px; color: var(--ink-muted); margin-top: 6px; }
+
+  /* Section headlines */
+  h2.section-h { font-size: 24px; font-weight: 500; margin: 32px 0 16px; }
+
+  /* Active session big card */
+  .session-active {
+    background: var(--paper-warm); border: 1px solid var(--border-soft); border-left: 4px solid var(--coral-primary);
+    border-radius: 8px; padding: 24px; margin-bottom: 16px;
+  }
+  .session-active .title { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  .session-active .body  { font-size: 14px; color: var(--ink-muted); margin: 0 0 16px; }
+  .surface-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .surface-btn {
+    background: var(--paper); border: 1px solid var(--border-soft); border-radius: 6px;
+    padding: 12px; text-align: left; cursor: pointer; min-height: 56px;
+  }
+  .surface-btn:hover { background: var(--paper-warm); }
+  .surface-btn .main-label { font-size: 13px; font-weight: 600; }
+  .surface-btn .sub-label  { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+  .hash-line { font-size: 11px; color: var(--ink-faint); }
+
+  /* Pending decisions empty */
+  .pending-empty { background: var(--paper-warm); border: 1px solid var(--border-soft); border-radius: 8px; padding: 32px; text-align: center; }
+  .pending-empty .check { font-size: 32px; color: var(--success); }
+  .pending-empty .title { font-family: 'Source Serif Pro', Georgia, serif; font-size: 18px; margin: 8px 0 4px; }
+  .pending-empty .body  { color: var(--ink-muted); font-size: 14px; }
+
+  /* Activity feed */
+  .activity-row { background: var(--paper-warm); border: 1px solid var(--border-soft); border-radius: 6px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 14px; }
+  .activity-row .text { flex: 1; }
+  .chip { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+  .chip.release    { background: var(--coral-soft); color: var(--coral-deep); }
+  .chip.accept     { background: #DDEEE3; color: var(--success); }
+  .chip.milestone  { background: #DDEEE3; color: var(--success); }
+  .chip.plan       { background: var(--coral-soft); color: var(--coral-deep); }
+  .chip.session    { background: var(--border-soft); color: var(--ink-muted); }
+  .chip.info       { background: var(--border-soft); color: var(--ink-muted); }
+
+  /* Right rail */
+  .rail-section { margin-bottom: 24px; }
+  .rail-section h3 { font-family: 'Source Serif Pro', Georgia, serif; font-size: 18px; font-weight: 500; margin: 0 0 12px; }
+  .alert-row { background: var(--paper); border: 1px solid var(--border-soft); border-radius: 6px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 13px; }
+  .alert-row .kind { flex: 1; color: var(--ink-muted); }
+  .alert-row .count { font-weight: 600; }
+  .stat-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border-soft); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .stat-label { font-size: 12px; color: var(--ink-muted); }
+  .stat-row .stat-value { font-size: 20px; font-weight: 600; }
+  .stat-row .stat-sub   { font-size: 11px; color: var(--ink-faint); margin-left: 6px; }
+
+  .audit-hint { font-size: 11px; color: var(--ink-faint); margin-top: 24px; word-break: break-all; }
+
+  /* Responsive: stack on narrow viewports */
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="grid">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="panel">
+    <div class="sidebar-header">
+      <svg class="sidebar-logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M16 4 C 10 4, 6 8, 6 14 L 6 22 C 6 26, 10 28, 16 28 C 22 28, 26 26, 26 22 L 26 14 C 26 8, 22 4, 16 4 Z" fill="none" stroke="#F97455" stroke-width="2"/>
+        <circle cx="16" cy="16" r="2.5" fill="#F97455"/>
+      </svg>
+      <div class="sidebar-title serif">Claude harness</div>
+    </div>
+    <div class="label-caps">Mission Control</div>
+
+    <input class="sidebar-search" type="text" placeholder="プロジェクト検索…" aria-label="プロジェクト検索">
+
+    <div class="section-label">プロジェクト ({{projects_count}})</div>
+    {{#projects}}
+    <div class="project-row {{status_dot_class}}">
+      <div class="name">
+        <span class="dot {{status_dot_class}}"></span>
+        <span>{{name}}</span>
+        <span class="pill coral">{{is_active_label}}</span>
+      </div>
+      <div class="sub">{{subtitle}}</div>
+    </div>
+    {{/projects}}
+
+    <div class="section-label">アクティブセッション ({{active_sessions_count}})</div>
+    {{#active_sessions}}
+    <div class="session-card">
+      <div style="font-weight:600; font-size:14px;">{{title}}</div>
+      <div class="mono" style="font-size:11px; color:var(--ink-faint); margin-top:2px;">session {{session_id_short}} · {{started_label}}</div>
+      <div class="progress-bar"><i style="width:{{progress_pct}}%"></i></div>
+    </div>
+    {{/active_sessions}}
+
+    <button class="cta-secondary">+ 新しい session を開始</button>
+  </aside>
+
+  <!-- CENTER MAIN -->
+  <main class="main">
+    <div class="hero">
+      <div class="hero-row">
+        <div>
+          <h1 class="serif">{{active_project}}</h1>
+          <p class="subtitle">{{active_project_subtitle}}</p>
+        </div>
+        <div class="status-pill"><span class="dot green"></span>{{all_systems_label}}</div>
+      </div>
+      <div class="mono" style="color:var(--ink-faint); margin-bottom:24px;">
+        branch: {{branch}} · HEAD: {{head_short}} · session: {{session_short}}
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="label">アクティブ Phase</div>
+        <div class="value">{{active_phase_label}}</div>
+        <div class="sub">{{active_phase_subtitle}}</div>
+      </div>
+      <div class="kpi">
+        <div class="label">タスク (cc:完了 / total)</div>
+        <div class="value success">{{tasks_done}} / {{tasks_total}}</div>
+        <div class="sub">{{tasks_pct}}% 完了</div>
+      </div>
+      <div class="kpi">
+        <div class="label">最新リリース</div>
+        <div class="value coral">{{latest_release}}</div>
+        <div class="sub">released {{latest_release_date}}</div>
+      </div>
+      <div class="kpi">
+        <div class="label">累計コスト</div>
+        <div class="value">${{cost_so_far_usd}}</div>
+        <div class="sub">of ${{cost_estimate_usd}} budget ({{cost_pct}}%)</div>
+      </div>
+    </div>
+
+    <h2 class="section-h serif">今 着手中のセッション ({{active_sessions_count}})</h2>
+    <div class="session-active">
+      <div class="title">{{current_session_title}}</div>
+      <div class="body">{{current_session_subtitle}}</div>
+      <div class="surface-nav">
+        <button class="surface-btn">
+          <div class="main-label">📋 Plan Brief を開く</div>
+          <div class="sub-label">計画見積を確認</div>
+        </button>
+        <button class="surface-btn">
+          <div class="main-label">📊 Progress Tracker を開く</div>
+          <div class="sub-label">進捗ボード</div>
+        </button>
+        <button class="surface-btn">
+          <div class="main-label">✅ Acceptance Demo を開く</div>
+          <div class="sub-label">検収判断</div>
+        </button>
+      </div>
+      <div class="hash-line mono">user_request_hash: {{current_session_user_request_hash_short}}</div>
+    </div>
+
+    <h2 class="section-h serif">判断待ち (Pending Decisions: {{pending_decisions_count}})</h2>
+    <div class="pending-empty">
+      <div class="check">✓</div>
+      <div class="title">全てクリア</div>
+      <div class="body">{{pending_decisions_message}}</div>
+    </div>
+
+    <h2 class="section-h serif">最近の活動 (last 7 days)</h2>
+    {{#activities}}
+    <div class="activity-row">
+      <span class="mono" style="color:var(--ink-faint); min-width:40px;">{{time}}</span>
+      <span class="text">{{text}}</span>
+      <span class="chip {{kind}}">{{kind}}</span>
+    </div>
+    {{/activities}}
+  </main>
+
+  <!-- RIGHT RAIL -->
+  <aside class="panel">
+    <div class="rail-section">
+      <h3>Cross-session drift</h3>
+      {{#drift_alerts}}
+      <div class="alert-row">
+        <span class="dot {{severity_class}}"></span>
+        <span class="kind">{{kind}}</span>
+        <span class="count">{{count}} 件</span>
+      </div>
+      {{/drift_alerts}}
+    </div>
+
+    <div class="rail-section">
+      <h3>Today's velocity</h3>
+      <div class="stat-row">
+        <span class="stat-label">commits today</span>
+        <span><span class="stat-value">{{velocity_commits_today}}</span><span class="stat-sub">(yesterday: {{velocity_commits_yesterday}})</span></span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">decisions resolved</span>
+        <span><span class="stat-value">{{velocity_decisions_today}}</span><span class="stat-sub">{{velocity_decisions_label}}</span></span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">cost spent today</span>
+        <span><span class="stat-value">${{velocity_cost_today}}</span></span>
+      </div>
+    </div>
+
+    <div class="rail-section">
+      <h3>Quick Actions</h3>
+      <button class="cta-secondary" style="margin-top:0;">+ 新しい Plan Brief を作成</button>
+      <button class="cta-secondary">⟳ 現セッションの Progress を更新</button>
+      <button class="cta-secondary">🔍 harness-mem を検索</button>
+    </div>
+
+    <div class="audit-hint mono">audit log: {{audit_log_path}}</div>
+    <div class="audit-hint mono">generated_at: {{generated_at}}</div>
+  </aside>
+
+</div>
+</body>
+</html>

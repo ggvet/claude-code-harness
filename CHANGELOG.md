@@ -6,6 +6,35 @@ Change history for claude-code-harness.
 
 ## [Unreleased]
 
+### 追加 (Phase 65.6: Project Command Center TOP)
+
+vibecoder ダッシュボードの **TOP 画面** (project レベルの mission control) を追加。
+既存の 3 surface (Plan Brief / Progress / Accept) は「1 タスクの詳細」を示すのに対し、
+Command Center は **プロジェクト全体の俯瞰** として機能する。
+hermes-desktop / hermes-webui の 3-panel pattern (sessions sidebar + center work + control rail) を参考にした。
+
+#### 1. `harness-command-center` skill
+
+**今まで**: Plans.md / git log / sibling projects を都度開いて状況を把握する必要があった。
+
+**今後**: `/harness-command-center` で以下を 1 枚の HTML で確認できる:
+- **左 sidebar**: sibling projects (10 件まで) を mtime 降順で並べ、active project を coral border で強調 + アクティブセッション一覧
+- **中央 main**: 4 KPI band (Active Phase / Tasks / Latest Release / Cumulative Cost) + 着手中セッションへの 3 surface 入口 (Plan/Progress/Accept) + Pending Decisions + 直近活動フィード
+- **右 rail**: Cross-session drift alerts (5 種固定) / Today's velocity (commits today vs yesterday) / Quick actions
+
+実装ファイル:
+- `skills/harness-command-center/SKILL.md` (i18n: description + description-en + description-ja)
+- `skills/harness-command-center/schemas/command-center-snapshot.v1.schema.json`
+- `scripts/command-center-compile.sh` — sibling projects + Plans.md + git log → snapshot JSON
+- `templates/html/command-center.html.template` — Claude Harness DS (coral + Source Serif Pro + paper-warm)
+- `tests/test-harness-command-center.sh` — 25 PASS (a-f カバレッジ: SKILL.md / schema / compile / snapshot 構造 / render / i18n)
+
+#### 2. Stitch 経由のブランド統一
+
+Claude Harness DS (coral `#F97455` + Source Serif Pro + paper-warm) を Stitch で正式登録し、
+4 surface (Command Center + Plan Brief + Progress + Accept) で一貫したビジュアル言語を確立。
+詳細は `out/DESIGN.md` 参照。
+
 ## [4.9.0] - 2026-05-10
 
 ### SemVer 判定根拠 (minor bump: 4.8.1 → 4.9.0)
