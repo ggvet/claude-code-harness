@@ -6,6 +6,31 @@ Change history for claude-code-harness.
 
 ## [Unreleased]
 
+### Phase 66: Open GitHub Issue closeout (#128, #123, #126, #124, #67)
+
+#### SemVer 判定根拠 (next minor: 4.9.0 → 4.10.0)
+
+5 件の open Issue を 1 本にまとめる場合、#128/#123/#126/#124 は patch 相当の bug fix ですが、#67 はユーザーが複数の Plans.md を named plan として扱える新機能です。
+そのため次の公開 release では minor bump が妥当です。version file は tag/release 実行時に `scripts/sync-version.sh` で同期する前提で、現 branch では Unreleased に記録します。
+
+#### Before / After
+
+| Issue | Before | After |
+|-------|--------|-------|
+| #128 WorktreeCreate JSON cwd | hook decision JSON が worktree path と誤解され、`{"decision":...}` という directory を作る余地があった | shell hook が JSON-like cwd を approve/no-op として扱い、real cwd だけ `.claude/state/worktree-info.json` を作る |
+| #123 codex-loop startup false success | `harness codex-loop start` が runner 即死後も成功表示し、あとで `state_stale` だけが残った | bounded startup health check で即死を `startup_failed` として non-zero にし、runner log tail を状態と status に残す |
+| #126 stale broadcast inbox | 新規 session が数か月前の `broadcast.md` entry を毎回「今日の通知」のように再表示した | 表示 entry の最大 timestamp で last-read を自動更新し、日付付き表示と stale cwd skip を追加 |
+| #124 release mirror drift | tag 後の CI で `opencode/` mirror drift が見つかり、release 作業が後追いで割れた | release preflight が build/validate/sync/diff gate を tag 前に実行し、Actions は current v6 系に更新 |
+| #67 multiple Plans | `Plans.md` は 1 repo 1 file 前提で、roadmap/team/backlog を安全に切り替える公式経路がなかった | `plans/manifest.json` + `.claude/state/active-plan.json` + explicit `--plan NAME` で named Plans を選択できる |
+
+#### Migration notes
+
+- 既存の `Plans.md` だけを使う repo は変更不要です。manifest がなければ従来通り `Plans.md` / `plans.md` / `PLANS.md` を探します。
+- 複数 plan を使う repo は `plans/manifest.json` に `default` と追加 plan を登録してください。
+- long-running run、CI、issue bridge では active pointer に頼らず `--plan NAME` を明示してください。
+- Manifest path は project root 相対のみです。絶対パス、`..`、repo 外 symlink は拒否されます。
+- Release 前は `bash scripts/release-preflight.sh` が mirror drift を fail gate にするため、tag 作成前に `node scripts/build-opencode.js` と `bash scripts/sync-skill-mirrors.sh --check` を通してください。
+
 ## [4.9.0] - 2026-05-10
 
 ### SemVer 判定根拠 (minor bump: 4.8.1 → 4.9.0)
