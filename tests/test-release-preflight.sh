@@ -256,6 +256,7 @@ test_doc_mentions_overrides() {
   assert_contains "$PROJECT_ROOT/docs/release-preflight.md" "HARNESS_RELEASE_PROJECT_ROOT"
   assert_contains "$PROJECT_ROOT/docs/release-preflight.md" "HARNESS_RELEASE_CI_STATUS_CMD"
   assert_contains "$PROJECT_ROOT/docs/release-preflight.md" "actions/checkout@v6"
+  assert_contains "$PROJECT_ROOT/docs/release-preflight.md" "actions/setup-go@v6"
 }
 
 test_preflight_pass_and_fail() {
