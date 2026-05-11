@@ -115,12 +115,23 @@ fi
 
 # ---- 成分 (2): DoD / request の数値要件含有率 (30 点満点) ----
 
-# request を「、」「。」「\n」で文に分割し、各文に数字を含むかを判定。
-# 数字を含む文の割合 × 30 を score とする (整数化)。
-# request が 1 文しかない場合: 数字を含むなら 30、含まないなら 0。
+# request を「。」「\n」で文に分割し、各文に数字を含むかを判定。
+# `tr` は LC_ALL=C の環境で UTF-8 句点をバイト列として壊すため、
+# 必須依存の jq で Unicode-safe に集計する。
 
-NUM_SENTENCES_TOTAL=$(printf '%s' "$QUERY" | tr '。\n' '\n\n' | awk 'NF > 0' | wc -l | tr -d ' ')
-NUM_SENTENCES_WITH_NUM=$(printf '%s' "$QUERY" | tr '。\n' '\n\n' | awk 'NF > 0 && /[0-9]/' | wc -l | tr -d ' ')
+SENTENCE_STATS_JSON="$(jq -n --arg q "$QUERY" '
+  ($q
+   | gsub("。|\\n"; "\n")
+   | split("\n")
+   | map(gsub("^[[:space:]]+|[[:space:]]+$"; ""))
+   | map(select(length > 0))) as $sentences
+  | {
+      total: ($sentences | length),
+      with_num: ($sentences | map(select(test("[0-9]"))) | length)
+    }
+')"
+NUM_SENTENCES_TOTAL="$(printf '%s\n' "$SENTENCE_STATS_JSON" | jq -r '.total')"
+NUM_SENTENCES_WITH_NUM="$(printf '%s\n' "$SENTENCE_STATS_JSON" | jq -r '.with_num')"
 
 if [[ "$NUM_SENTENCES_TOTAL" -eq 0 ]]; then
   SCORE_DOD=0

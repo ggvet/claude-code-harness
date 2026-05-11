@@ -147,6 +147,26 @@ else
   fail "Step 3a: confidence unexpectedly low for 5-all-done fixture: $ctx_conf"
 fi
 
+# Locale regression: GNU tr / awk style byte splitting can corrupt UTF-8 under
+# LC_ALL=C and undercount Japanese sentence boundaries. The compile step must
+# keep the same confidence signal in that CI-like locale.
+CONTEXT_JSON_C_LOCALE="$TMP_DIR/context-c-locale.json"
+if env LC_ALL=C LANG=C bash "$COMPILE" \
+  --query "$USER_REQUEST" \
+  --project "$PROJECT_NAME" \
+  --mem-results "$FIXTURE_MEM" \
+  --understanding "Plans.md の cc:WIP / cc:TODO / cc:完了 件数を 1 枚 HTML で可視化したい" \
+  --out "$CONTEXT_JSON_C_LOCALE" 2>/dev/null; then
+  ctx_conf_c_locale="$(jq -r '.confidence' "$CONTEXT_JSON_C_LOCALE")"
+  if [[ "$ctx_conf_c_locale" -ge 95 ]]; then
+    pass "Step 3a: LC_ALL=C compile keeps high confidence (got $ctx_conf_c_locale, expected ≥ 95)"
+  else
+    fail "Step 3a: LC_ALL=C compile lowered confidence unexpectedly: $ctx_conf_c_locale"
+  fi
+else
+  fail "Step 3a: LC_ALL=C compile.sh failed"
+fi
+
 # ---- Step 3b: render HTML ----
 
 if bash "$RENDER" --template plan-brief --data "$CONTEXT_JSON" --out "$HTML_OUT" 2>/dev/null; then
