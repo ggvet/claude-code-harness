@@ -343,6 +343,51 @@ release_lock() {
   rm -rf "${LOCK_DIR}" 2>/dev/null || true
 }
 
+runner_log_tail_one_line() {
+  local max_lines="${1:-20}"
+  if [ ! -f "${RUNNER_LOG}" ]; then
+    return 0
+  fi
+  tail -n "${max_lines}" "${RUNNER_LOG}" 2>/dev/null \
+    | tr '\n' ' ' \
+    | sed 's/[[:space:]][[:space:]]*/ /g; s/^[[:space:]]*//; s/[[:space:]]*$//'
+}
+
+wait_for_runner_startup() {
+  local runner_pid="$1"
+  local checks="${CODEX_LOOP_STARTUP_CHECKS:-10}"
+  local interval="${CODEX_LOOP_STARTUP_INTERVAL_SEC:-0.2}"
+  local i=0
+
+  while [ "${i}" -lt "${checks}" ]; do
+    sleep "${interval}"
+    if ! is_pid_alive "${runner_pid}"; then
+      local status exit_reason
+      status="$(json_get_file "${RUN_JSON}" "status" "")"
+      exit_reason="$(json_get_file "${RUN_JSON}" "exit_reason" "")"
+      if [ -s "${CYCLES_JSONL}" ] || [ -f "${CURRENT_JOB_JSON}" ]; then
+        return 0
+      fi
+      case "${status}" in
+        completed|stopped)
+          return 0
+          ;;
+        failed)
+          case "${exit_reason}" in
+            task_blocked|pivot_required)
+              return 0
+              ;;
+          esac
+          ;;
+      esac
+      return 1
+    fi
+    i=$((i + 1))
+  done
+
+  return 0
+}
+
 delay_for_pacing() {
   local pacing="$1"
   case "${pacing}" in
@@ -2545,6 +2590,29 @@ EOF
 }
 EOF
 )"
+  if ! wait_for_runner_startup "${runner_pid}"; then
+    local log_tail
+    log_tail="$(runner_log_tail_one_line 30)"
+    local error_message="loop runner exited during startup"
+    if [ -n "${log_tail}" ]; then
+      error_message="${error_message}; runner log tail: ${log_tail}"
+    fi
+    run_state_patch "$(cat <<EOF
+{
+  "pid": null,
+  "status": "startup_failed",
+  "exit_reason": "startup_failed",
+  "finished_at": $(json_escape "$(timestamp_utc)"),
+  "updated_at": $(json_escape "$(timestamp_utc)"),
+  "error_message": $(json_escape "${error_message}"),
+  "startup_log_tail": $(json_escape "${log_tail}")
+}
+EOF
+)"
+    release_lock
+    printf 'Failed to start codex-loop %s: %s\n' "${run_id}" "${error_message}" >&2
+    exit 1
+  fi
   printf 'Started codex-loop %s in background (pid=%s)\n' "${run_id}" "${runner_pid}"
 }
 
@@ -2572,12 +2640,12 @@ cmd_status() {
   fi
 
   local payload
-  payload="$(python_json "${RUN_JSON}" "${CURRENT_JOB_JSON}" "${PROJECT_ROOT}" <<'PY'
+  payload="$(python_json "${RUN_JSON}" "${CURRENT_JOB_JSON}" "${PROJECT_ROOT}" "${RUNNER_LOG}" <<'PY'
 import json
 import os
 import sys
 
-run_file, current_job_file, project_root = sys.argv[1:4]
+run_file, current_job_file, project_root, runner_log_file = sys.argv[1:5]
 
 def pid_alive(pid):
     if pid in (None, "", 0):
@@ -2613,7 +2681,17 @@ active_statuses = {"starting", "running", "waiting", "stopping"}
 if run.get("status") in active_statuses and not pid_alive(run.get("pid")):
     run = dict(run)
     run["status"] = "state_stale"
-    run["error_message"] = run.get("error_message") or "loop runner pid is not alive"
+    if not run.get("error_message"):
+        tail = ""
+        try:
+            with open(runner_log_file, "r", encoding="utf-8", errors="replace") as fh:
+                lines = fh.readlines()[-20:]
+            tail = " ".join(line.strip() for line in lines if line.strip())
+        except Exception:
+            tail = ""
+        run["error_message"] = "loop runner pid is not alive" + (f"; runner log tail: {tail}" if tail else "")
+        if tail:
+            run["startup_log_tail"] = tail
     payload["run"] = run
 
 print(json.dumps(payload, ensure_ascii=False, indent=2))

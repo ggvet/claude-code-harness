@@ -744,6 +744,94 @@ EOF
   cleanup_tmp "${tmp}"
 }
 
+run_startup_failure_case() {
+  local tmp
+  tmp="$(mktemp -d)"
+  local repo="${tmp}/repo"
+  mkdir -p "${repo}"
+  setup_repo "${repo}"
+  setup_fake_tools "${tmp}" "complete"
+
+  local output=""
+  local status=0
+  set +e
+  output="$(
+    PROJECT_ROOT="${repo}" \
+    CODEX_LOOP_TASK_DRIVER=companion \
+    CODEX_LOOP_COMPANION="${tmp}/bin/fake-companion.sh" \
+    CODEX_LOOP_VALIDATE_SCRIPT="${tmp}/bin/fake-validate.sh" \
+    CODEX_LOOP_ENRICH_CONTRACT_SCRIPT="${tmp}/bin/fake-enrich-contract.sh" \
+    CODEX_LOOP_ENSURE_CONTRACT_SCRIPT="${tmp}/bin/fake-ensure-contract.sh" \
+    CODEX_LOOP_RUNTIME_REVIEW_SCRIPT="${tmp}/bin/fake-runtime-review.sh" \
+    CODEX_LOOP_WRITE_REVIEW_RESULT_SCRIPT="${tmp}/bin/fake-write-review-result.sh" \
+    CODEX_LOOP_PLATEAU_SCRIPT="${tmp}/bin/fake-plateau.sh" \
+    CODEX_LOOP_CHECKPOINT_SCRIPT="${tmp}/bin/fake-checkpoint.sh" \
+    CODEX_LOOP_MEM_CLIENT="${tmp}/bin/fake-mem.sh" \
+    CODEX_LOOP_GENERATE_CONTRACT_SCRIPT="/bin/false" \
+    CODEX_LOOP_STARTUP_CHECKS=20 \
+    CODEX_LOOP_STARTUP_INTERVAL_SEC=0.05 \
+    bash "${LOOP_SCRIPT}" start all --max-cycles 1 --pacing worker --executor task 2>&1
+  )"
+  status=$?
+  set -e
+
+  if [ "${status}" -ne 0 ] && \
+     printf '%s' "${output}" | grep -q 'Failed to start codex-loop' && \
+     ! printf '%s' "${output}" | grep -q 'Started codex-loop'; then
+    pass "startup failure case: start fails instead of printing success"
+  else
+    fail "startup failure case: start did not fail fast"
+  fi
+
+  if jq -e '.status == "startup_failed" and (.error_message | contains("runner log tail"))' \
+    "${repo}/.claude/state/codex-loop/run.json" >/dev/null; then
+    pass "startup failure case: run state records startup_failed with log tail"
+  else
+    fail "startup failure case: run state did not preserve startup failure"
+  fi
+
+  if [ ! -d "${repo}/.claude/state/locks/codex-loop.lock.d" ]; then
+    pass "startup failure case: stale startup lock was released"
+  else
+    fail "startup failure case: lock remained after startup failure"
+  fi
+
+  cleanup_tmp "${tmp}"
+}
+
+run_state_stale_log_tail_case() {
+  local tmp
+  tmp="$(mktemp -d)"
+  local repo="${tmp}/repo"
+  mkdir -p "${repo}/.claude/state/codex-loop"
+  cat > "${repo}/.claude/state/codex-loop/run.json" <<'EOF'
+{
+  "schema_version": "codex-loop-run.v1",
+  "run_id": "codex-loop-stale-fixture",
+  "selection": "all",
+  "max_cycles": 1,
+  "status": "running",
+  "pid": 99999999
+}
+EOF
+  cat > "${repo}/.claude/state/codex-loop/runner.log" <<'EOF'
+[fixture] starting runner
+[fixture] early startup boom
+EOF
+
+  local output
+  output="$(PROJECT_ROOT="${repo}" bash "${LOOP_SCRIPT}" status --json)"
+
+  if printf '%s' "${output}" \
+    | jq -e '.run.status == "state_stale" and (.run.error_message | contains("early startup boom"))' >/dev/null; then
+    pass "state stale case: status includes runner log tail"
+  else
+    fail "state stale case: status did not include runner log tail"
+  fi
+
+  cleanup_tmp "${tmp}"
+}
+
 run_plain_status_case() {
   local tmp
   tmp="$(mktemp -d)"
@@ -1318,6 +1406,8 @@ run_completion_case
 run_stop_case
 run_cross_repo_case
 run_state_corrupt_case
+run_startup_failure_case
+run_state_stale_log_tail_case
 run_plain_status_case
 run_named_selection_case
 run_heading_selection_case
