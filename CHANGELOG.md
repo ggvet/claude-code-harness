@@ -37,6 +37,15 @@ Change history for claude-code-harness.
 - 全ワークフローに workflow-level `permissions: contents: read` を明示。`opencode-compat` は無宣言で過剰権限だった状態を最小権限に矯正し、release は job-level `contents: write` に絞り込み。
 - すべてのチェックアウトに `persist-credentials: false` を追加してトークン窃取リスクを低減し、`filter: blob:none` で部分クローン高速化。
 - `opencode-compat` の push トリガーを `branches: [main]` に制限してフォーク push の余計な実行を防止。
+- Refactored `harness-review` into a progressive-disclosure dispatcher with lightweight `--quick` / `--codex-closeout` review paths, split governance details into reference files, and made review read-only by default so commit / push / release remain owned by work or release flows.
+
+#### Refactored: harness-review
+
+| Before | After |
+|--------|-------|
+| `harness-review` kept target detection, governance, TeamAgent debate, plan/scope review, security, UI, Codex second opinion, and fix-loop guidance in one 878-line `SKILL.md` | `SKILL.md` is a sub-350-line dispatcher that loads only the needed reference for `quick`, `codex-closeout`, `code`, `plan`, `scope`, `security`, `ui-rubric`, or `full` |
+| Lightweight closeout and full release-grade review used the same heavy path | `--quick` / `--codex-closeout` fix the target first, treat Codex findings as advisory, classify accepted/rejected findings, and stop on clean results |
+| `APPROVE` guidance could be read as default auto-commit behavior | Review is read-only by default; commit / push / release stay in `harness-work`, `harness-release`, or explicit user instructions |
 
 ### Fixed
 
