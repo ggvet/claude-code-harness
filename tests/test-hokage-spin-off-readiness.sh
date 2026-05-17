@@ -7,7 +7,7 @@ FAILED=0
 
 require_fixed() {
   local pattern="$1"
-  if ! rg -q --fixed-strings -- "$pattern" "$DOC"; then
+  if ! grep -Fq -- "$pattern" "$DOC"; then
     echo "missing required readiness pattern: $pattern"
     FAILED=1
   fi
