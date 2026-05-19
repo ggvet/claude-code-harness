@@ -41,6 +41,14 @@ if $ARGUMENTS == "":
 
 <!-- 上記ブロックは AUTO-START CONTRACT。skill-editing.md「最冒頭 3 行以内」ルール準拠。patterns.md P27 解法 3 点セット (機械可読条件 + 禁止行動 literal + AUTOSTART marker) -->
 
+### Output Contract (P35: 「止まったように見える」UX 対策)
+
+skill 結論時の output の **最後の 1 行**は必ず次の literal を含める:
+
+`↑この結果は Claude が要約します。Enter キーで次へ進むか、新規 prompt で別の指示を出してください。`
+
+これは `<local-command-stdout>` 経由で text response として表示されると user が「止まった」と感じる UX 問題への明示的な instruction (patterns.md P35)。
+
 `harness-release` / `/release` だけが入力された場合、これは
 **「今までの作業をコミットしてリリースしたい」** という意味として扱う。
 「タスクがありません」「指示を待ちます」で止まってはいけない。

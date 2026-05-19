@@ -30,6 +30,7 @@ required_terms=(
   "RELEASE_AUTOSTART:"
   'if $ARGUMENTS == ""'
   "タスクが不明確"
+  "↑この結果は Claude が要約します"
 )
 
 failures=0
