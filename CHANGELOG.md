@@ -100,6 +100,12 @@ Change history for claude-code-harness.
   - `index() != null` ではなく `any(. == "")` を選択した理由は `!` が zsh history expansion と衝突する可能性を避けるため (`!=` がエスケープされる)
   - semantic test: `["www.firecrawl.dev"]` が `"firecrawl.dev"` 必須チェックで正しく **false** を返すことを確認済
 
+#### 8. mode 検証用 stat も GNU-first に統一 (Codex review 4 回目対応)
+
+**今まで**: 直前 commit で `MODE=...` 取得側の `stat` は Linux GNU 優先に修正したものの、merge 後の検証用 `stat` コマンド (jq merge ブロック末尾の「mode が保持されたか確認」行) は旧 BSD 優先の順序のまま残っていました。Linux user が recipe をコピペした場合、検証ステップだけ `stat -f` が filesystem-status output を返して exit 0 になり、permission preservation 修正の効果を確認できない不整合がありました。
+
+**今後**: 検証用 `stat` も MODE 取得側と同じ順序 (`stat -c '%a' || stat -f '%Lp'`) に統一。recipe 全体で Linux / macOS どちらでも mode 確認が機能するようになりました。
+
 `deniedDomains` 9 個 (クラウド metadata endpoint + pastebin 系) は SSRF + 流出経路の遮断として維持。`allowedDomains` で許可されていても `deniedDomains` が優先で deny される設計を明示。
 
 ## [4.11.3] - 2026-05-19

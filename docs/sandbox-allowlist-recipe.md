@@ -144,7 +144,8 @@ jq '
   && mv "${SETTINGS}.tmp" "$SETTINGS"
 
 # 4. mode が保持されたか念のため確認 (元の mode と一致するはず)
-stat -f '%Mp%Lp' "$SETTINGS" 2>/dev/null || stat -c '%a' "$SETTINGS"
+#    順序は MODE 取得と同じ: Linux GNU stat -c → macOS BSD stat -f fallback
+stat -c '%a' "$SETTINGS" 2>/dev/null || stat -f '%Lp' "$SETTINGS"
 ```
 
 > **なぜ `chmod "$MODE"` が必要か**: `>` redirect + `mv` パターンは tmp ファイルを umask (一般に `022` → 644) で作成するため、元の `~/.claude/settings.json` が `600` (token / secret を含むため強い permission で保護) だった場合、merge 後に **read access が広がる** security regression が起きる。`chmod "$MODE"` で元の mode を明示復元すれば、token を含むファイルでも安全。
