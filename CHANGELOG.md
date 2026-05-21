@@ -84,6 +84,22 @@ Change history for claude-code-harness.
   - 必須ホスト (`api.firecrawl.dev` / `169.254.169.254` 等) の `contains` チェックを追加 (Case A / B 共通の最低条件)
   - filesystem セクションの破壊チェックを Case B 限定として明示
 
+#### 7. `stat` 順序の Linux 互換性 + jq exact match 化 (Codex review 3 回目対応)
+
+**今まで**: 直前 commit で追加した cross-platform `stat` コマンドが `stat -f '%Mp%Lp' ... || stat -c '%a' ...` の順序で、**BSD `stat -f` を先に試す**設計でした。Linux GNU stat では `-f` は **filesystem-status flag** として認識され、format option ではないため、Linux 上では filesystem の multiline 情報を `MODE` 変数に代入してしまい、後続の `chmod "$MODE"` が失敗する不具合がありました。また検証セクションの `jq array contains` は **string substring matching** で再帰的に動くため、`"www.firecrawl.dev"` のような部分一致が `"firecrawl.dev"` の必須ホストチェックを満たしてしまう false positive がありました。
+
+**今後**: Codex review 3 回目 (P2 + P3 指摘) を反映:
+
+- `stat` の試行順序を **Linux GNU `-c` 優先 → macOS BSD `-f` fallback** に修正:
+  - `MODE=$(stat -c '%a' "$SETTINGS" 2>/dev/null || stat -f '%Lp' "$SETTINGS")`
+  - 順序が逆だと Linux で BSD `-f` を最初に試して filesystem-status 出力で MODE が壊れる
+  - macOS では GNU `-c` が即 fail → BSD `-f` で `%Lp` (lower octal) が返る
+  - 動作確認: macOS で `600` が正しく返ることを検証済
+- `jq array contains` から `any(. == "...")` に書き換え:
+  - 部分一致誤判定を防ぐ exact match
+  - `index() != null` ではなく `any(. == "")` を選択した理由は `!` が zsh history expansion と衝突する可能性を避けるため (`!=` がエスケープされる)
+  - semantic test: `["www.firecrawl.dev"]` が `"firecrawl.dev"` 必須チェックで正しく **false** を返すことを確認済
+
 `deniedDomains` 9 個 (クラウド metadata endpoint + pastebin 系) は SSRF + 流出経路の遮断として維持。`allowedDomains` で許可されていても `deniedDomains` が優先で deny される設計を明示。
 
 ## [4.11.3] - 2026-05-19

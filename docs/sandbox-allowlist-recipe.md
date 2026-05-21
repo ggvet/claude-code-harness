@@ -105,8 +105,9 @@ merge ルール:
 SETTINGS=~/.claude/settings.json
 
 # 1. 元のファイル mode を保存 (token を含むため 600 等で保護されているケースに対応)
-#    macOS / Linux 両対応の cross-platform stat
-MODE=$(stat -f '%Mp%Lp' "$SETTINGS" 2>/dev/null || stat -c '%a' "$SETTINGS")
+#    cross-platform stat: Linux GNU stat -c を先に試し、macOS BSD stat -f に fallback
+#    (順序重要: BSD stat -f は Linux では filesystem-status flag として誤動作する)
+MODE=$(stat -c '%a' "$SETTINGS" 2>/dev/null || stat -f '%Lp' "$SETTINGS")
 
 # 2. backup (cp -p で mode/ownership を保持)
 cp -p "$SETTINGS" "${SETTINGS}.bak.$(date +%Y%m%d-%H%M%S)"
@@ -166,9 +167,14 @@ jq '.sandbox.network.allowedDomains | length' ~/.claude/settings.json
 jq '.sandbox.network.deniedDomains | length' ~/.claude/settings.json
 
 # 必須ホストが含まれているか (Case A / B 共通の最低条件)
+# 注意: jq array `contains` は string substring match なので "www.firecrawl.dev" が
+# "firecrawl.dev" を含むと誤判定する。exact match のため any(. == "...") を使う
+# (any() は ! を含まないため zsh history expansion との衝突も無い)
 jq -e '
-  ([.sandbox.network.allowedDomains[]] | contains(["api.firecrawl.dev", "firecrawl.dev"])) and
-  ([.sandbox.network.deniedDomains[]] | contains(["169.254.169.254", "pastebin.com"]))
+  (.sandbox.network.allowedDomains | any(. == "api.firecrawl.dev")) and
+  (.sandbox.network.allowedDomains | any(. == "firecrawl.dev")) and
+  (.sandbox.network.deniedDomains | any(. == "169.254.169.254")) and
+  (.sandbox.network.deniedDomains | any(. == "pastebin.com"))
 ' ~/.claude/settings.json && echo "REQUIRED HOSTS PRESENT"
 
 # Case B 限定: 既存 filesystem セクションが破壊されていないか
