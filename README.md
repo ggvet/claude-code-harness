@@ -80,6 +80,7 @@ generated contract before execution continues.
 ## How It Works
 
 Harness adds a source-of-truth loop around agent work.
+The 5 verb skills keep that surface small: plan, work, review, sync, release.
 
 1. You describe the outcome in normal language.
 2. `/harness-plan` drafts or updates `spec.md` and `Plans.md` with scope,
@@ -170,6 +171,7 @@ Use these after the basic trigger path is visible.
 | [Skill trigger gate](docs/onboarding/skill-trigger-acceptance.md) | How install success is verified. |
 | [Capability matrix](docs/tool-capability-matrix.md) | Supported, internal-compatible, candidate, and unsupported host claims. |
 | [Claude Code Compatibility](docs/CLAUDE_CODE_COMPATIBILITY.md) | Current Claude Code requirements and compatibility notes. |
+| [Cursor Integration](docs/CURSOR_INTEGRATION.md) | Cursor handoff boundary and candidate-route notes. |
 | [Distribution Scope](docs/distribution-scope.md) | Included vs compatibility vs development-only paths. |
 | [Hardening parity](docs/hardening-parity.md) | Runtime safety differences between Claude hooks and Codex gates. |
 | [Work All Evidence Pack](docs/evidence/work-all.md) | Success/failure verification contract for full-plan execution. |

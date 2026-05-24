@@ -6,6 +6,10 @@ Change history for claude-code-harness.
 
 ## [Unreleased]
 
+### Fixed
+
+- Restored README claim anchors for Cursor docs, 5 verb skills, the Go-native guardrail engine, and Japanese opt-in language guidance so main CI matches the refreshed README surface.
+
 ## [4.12.1] - 2026-05-24
 
 ### Changed

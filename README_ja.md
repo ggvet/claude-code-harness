@@ -80,6 +80,7 @@ claude
 ## 中で何が起きるか
 
 Harness は agent 作業の前後に、正本と検証の loop を置きます。
+基本は plan、work、review、sync、release の 5動詞スキルで動かす 5動詞ワークフローです。
 
 1. あなたは作りたい結果を普通に伝える。
 2. `/harness-plan` が `spec.md` と `Plans.md` を作成・更新し、範囲、
@@ -145,7 +146,8 @@ tier を上げます。
 
 - supported な Claude 導線では Claude Code v2.1+。
 - local setup を行うための書き込み可能な project repo。
-- Go-native guardrail engine は Node.js 不要。
+- 配布時の既定言語は English。日本語 UI を明示する場合は `CLAUDE_CODE_HARNESS_LANG=ja claude` で起動。
+- Go ネイティブガードレールエンジンは Node.js 不要。
 - 任意で [harness-mem](https://github.com/Chachamaru127/harness-mem) を使うと、
   healthy に設定されている時だけセッション横断の記憶を扱える。
 
@@ -170,6 +172,7 @@ tier を上げます。
 | [Skill trigger gate](docs/onboarding/skill-trigger-acceptance.md) | 導入後に skill / workflow が使えるかの確認。 |
 | [Capability matrix](docs/tool-capability-matrix.md) | supported / internal-compatible / candidate / unsupported の根拠。 |
 | [Claude Code Compatibility](docs/CLAUDE_CODE_COMPATIBILITY.md) | Claude Code 要件と互換性メモ。 |
+| [Cursor Integration](docs/CURSOR_INTEGRATION.md) | Cursor handoff 境界と candidate route メモ。 |
 | [Distribution Scope](docs/distribution-scope.md) | 配布対象 / 互換維持 / 開発専用の境界。 |
 | [Hardening parity](docs/hardening-parity.md) | Claude hooks と Codex gates の安全境界の違い。 |
 | [Work All Evidence Pack](docs/evidence/work-all.md) | full-plan 実行の成功系/失敗系検証契約。 |
