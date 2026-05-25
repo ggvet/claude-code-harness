@@ -33,6 +33,9 @@ count_plan_tasks() {
       if (line ~ /^[[:space:]]*[-*+][[:space:]]+\[[ xX]\]/) {
         return 1
       }
+      if (line ~ /^[[:space:]]*#+[[:space:]]+/) {
+        return 1
+      }
       if (line !~ /^[[:space:]]*\|/) {
         return 0
       }
@@ -66,6 +69,9 @@ list_plan_tasks() {
       if (line ~ /^[[:space:]]*[-*+][[:space:]]+\[[ xX]\]/) {
         return 1
       }
+      if (line ~ /^[[:space:]]*#+[[:space:]]+/) {
+        return 1
+      }
       if (line !~ /^[[:space:]]*\|/) {
         return 0
       }
@@ -88,6 +94,27 @@ list_plan_tasks() {
       }
     }
   ' "$file" 2>/dev/null || true
+}
+
+extract_plan_task_title() {
+  local task_line="$1"
+
+  task_line="${task_line#*:}"
+  case "$task_line" in
+    \|*)
+      printf '%s\n' "$task_line" | awk -F'|' '{
+        title = $3
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", title)
+        print title
+      }'
+      ;;
+    \#*)
+      printf '%s\n' "$task_line" | sed -E 's/^[[:space:]]*#+[[:space:]]*[^:]+:[[:space:]]*//; s/[[:space:]]*`cc:[^`]+`.*$//; s/[[:space:]]+$//'
+      ;;
+    *)
+      printf '%s\n' "$task_line" | sed -E 's/^[[:space:]]*[-*+][[:space:]]+\[[ xX]\][[:space:]]*//; s/.*\*\*([^*]+)\*\*.*/\1/; s/[[:space:]]*`cc:[^`]+`.*$//; s/[[:space:]]+$//'
+      ;;
+  esac
 }
 
 STATE_FILE=".claude/state/session.json"
@@ -134,7 +161,10 @@ WIP_TASK_TITLE=""
 if [ -f "$PLANS_PATH" ]; then
   COMPLETED_TASKS=$(count_plan_tasks "cc:(done|完了)" "$PLANS_PATH")
   # 現在のWIPタスクタイトルを取得（最初の1件）
-  WIP_TASK_TITLE=$(grep -E "^[[:space:]]*[-*+][[:space:]]+\[[ xX]\][[:space:]]+\*\*.*\`cc:(WIP|wip)\`" "$PLANS_PATH" 2>/dev/null | head -1 | sed 's/.*\*\*\(.*\)\*\*.*/\1/' || true)
+  WIP_TASK_LINE=$(list_plan_tasks "cc:(WIP|wip)" "$PLANS_PATH" 1 | head -1)
+  if [ -n "$WIP_TASK_LINE" ]; then
+    WIP_TASK_TITLE=$(extract_plan_task_title "$WIP_TASK_LINE")
+  fi
 fi
 
 # Agent Trace から直近の編集ファイル情報を取得

@@ -210,11 +210,17 @@ cat > "${HOOK_TMP}/.claude/state/session.json" <<EOF
   "memory_logged": false
 }
 EOF
+cat >> "${HOOK_TMP}/plans/Plans.md" <<'EOF'
+
+#### H-3: Heading WIP `cc:wip`
+EOF
 summary_output="$(cd "${HOOK_TMP}" && CLAUDE_CODE_HARNESS_LANG=ja bash "${PROJECT_ROOT}/scripts/session-summary.sh" 2>/dev/null)"
+printf '%s' "$summary_output" | grep -q '現在のタスク: active work'
 printf '%s' "$summary_output" | grep -q '完了タスク: 2件'
 if grep -q 'legend only' "${HOOK_TMP}/.claude/memory/session-log.md"; then
   echo "[FAIL] session-summary must not include marker legend rows in WIP handoff" >&2
   exit 1
 fi
+grep -q 'H-3' "${HOOK_TMP}/.claude/memory/session-log.md"
 
 echo "test-plans-status-markers: ok"
