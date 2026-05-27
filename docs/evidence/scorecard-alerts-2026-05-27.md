@@ -20,13 +20,13 @@ Open alerts before this pass: 13
 
 | Alert | Check | Disposition | Evidence / action |
 |-------|-------|-------------|-------------------|
-| #1 | Branch-Protection | Fixed in repository settings | `main` now prevents force pushes and branch deletion. It also requires `actionlint`, `validate`, and `test-go` to pass, with one PR approval for non-admin merges. GitHub marked the original alert fixed at `2026-05-27T07:22:16Z`. |
+| #1 | Branch-Protection | Fixed in repository settings | `main` now prevents force pushes and branch deletion. It also requires `actionlint`, `validate`, and `test-go` to pass. GitHub marked the original alert fixed at `2026-05-27T07:22:16Z`. |
 | #7-#10 | Pinned-Dependencies | Code fix | Removed mutable global npm install/update fallbacks from `scripts/quick-install.sh` and `scripts/check-codex.sh`. |
 | #14 | SAST | Code fix | Removed CodeQL path filters so CodeQL runs on every `main` push and every PR targeting `main`, matching GitHub's CodeQL push/PR/schedule guidance. |
 | #13 | Fuzzing | Code fix | Added a Go fuzz target for the user-editable `harness.toml` parser boundary. |
 | #2-#5 | Binary-Artifacts | Annotate / dismiss as intentional payload | The four platform binaries are required for Claude plugin marketplace installs because release assets are not part of the marketplace git-clone payload. `tests/test-distribution-archive.sh` now requires all shipped platform binaries so accidental removal fails CI. |
 | #12 | CII-Best-Practices | Annotate / dismiss as policy defer | The OpenSSF Best Practices badge is an external attestation program. This release line keeps repo-local security gates and records the CII badge as deferred. |
-| #11 | Code-Review | Settings hardened; history-dependent alert remains | `main` now requires one PR approval for non-admin merges, but Scorecard's Code-Review alert is based on recent merged changesets and is not retroactive. It should improve only after reviewed PR history accumulates. |
+| #11 | Code-Review | Harness policy gate; history-dependent alert remains | This project treats `harness-review` / Codex companion review approval as the merge review gate. GitHub human-review enforcement is not required because it conflicts with the Harness release flow and self-hosted plugin workflow. |
 
 ## Branch Protection State
 
@@ -39,18 +39,15 @@ Observed after update:
     "contexts": ["actionlint", "validate", "test-go"]
   },
   "enforce_admins": false,
-  "required_pull_request_reviews": {
-    "required_approving_review_count": 1,
-    "dismiss_stale_reviews": false,
-    "require_code_owner_reviews": false,
-    "require_last_push_approval": false
-  },
+  "required_pull_request_reviews": null,
   "allow_force_pushes": false,
   "allow_deletions": false
 }
 ```
 
-`enforce_admins` stays false intentionally so release-complete marker commits can still be pushed by an administrator when the release flow needs them. Normal non-admin merges now require review and the three primary validation checks.
+`required_pull_request_reviews` stays null intentionally. For this repository, the review gate is Harness review evidence (`harness-review` / Codex companion review), not GitHub's human-review enforcement. This preserves the intended flow: when Harness review approves and required checks pass, the PR can be merged.
+
+`enforce_admins` stays false intentionally so release-complete marker commits can still be pushed by an administrator when the release flow needs them.
 
 ## Verification
 
