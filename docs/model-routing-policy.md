@@ -63,9 +63,9 @@ Cursor subagents support frontmatter `model: inherit|<model-id>`, `readonly`,
 and background execution. The Task tool accepts an explicit `model` parameter.
 Cursor CLI supports `--model` for per-run selection. Cloud Agent API accepts
 `model.id` and `model.params`. Official docs:
-https://cursor.com/docs/context/subagents ,
+https://cursor.com/docs/subagents ,
 https://cursor.com/docs/cli/overview ,
-https://cursor.com/docs/cloud-agent/api
+https://cursor.com/docs/cloud-agent/api/endpoints
 
 ## Override Priority (All Hosts)
 

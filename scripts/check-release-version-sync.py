@@ -347,7 +347,7 @@ def build_report(root: Path) -> dict[str, Any]:
             {
                 "surface": "canonical",
                 "status": "missing",
-                "detail": "No canonical version found. Expected VERSION, package.json, .claude-plugin/plugin.json, or .codex-plugin/plugin.json.",
+                "detail": f"No canonical version found. Expected {', '.join(CANONICAL_PRIORITY)}.",
             }
         )
     else:

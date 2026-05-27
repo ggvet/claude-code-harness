@@ -10,6 +10,13 @@ Change history for claude-code-harness.
 
 ### Changed
 
+| Before | After |
+| --- | --- |
+| Cursor had no adapter candidate route. | Cursor has a `candidate` adapter skeleton, evidence doc, and static smoke. |
+| Cursor support claims were intentionally absent. | Cursor remains `candidate`; public support claims still wait for workflow smoke. |
+| Bootstrap and capability contracts did not describe Cursor. | `spec.md`, capability matrix, and bootstrap routing contract define Cursor boundaries. |
+| Breezing and model routing had no Cursor mapping. | Breezing docs and `scripts/model-routing.sh --host cursor` define candidate routing. |
+
 - **Phase 81 Cursor CCH Adapter (candidate)**: Added Cursor adapter evidence
   (`docs/research/cursor-adapter-candidate.md`), contract updates in
   `spec.md`, capability matrix, and bootstrap routing contract, adapter skeleton
