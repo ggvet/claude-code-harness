@@ -614,7 +614,7 @@ if ! rg -q --fixed-strings 'codex update' "scripts/check-codex.sh"; then
   echo "  missing: scripts/check-codex.sh codex update guidance"
   permission_policy_ok=false
 fi
-if ! rg -q --fixed-strings 'npm update -g @openai/codex' "scripts/check-codex.sh"; then
+if ! rg -q --fixed-strings 'versioned / pinned update flow' "scripts/check-codex.sh"; then
   echo "  missing: scripts/check-codex.sh package-manager fallback guidance"
   permission_policy_ok=false
 fi
