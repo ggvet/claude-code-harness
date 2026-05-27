@@ -127,7 +127,12 @@ else
 fi
 
 for context in "${REQUIRED_CONTEXTS[@]}"; do
-  if jq -e --arg context "$context" '(.required_status_checks.contexts // []) | index($context) != null' >/dev/null <<<"$json"; then
+  if jq -e --arg context "$context" '
+    [
+      (.required_status_checks.contexts // [])[],
+      (.required_status_checks.checks // [])[].context
+    ] | index($context) != null
+  ' >/dev/null <<<"$json"; then
     pass_check "required status check includes ${context}"
   else
     fail_check "required status checks must include ${context}"

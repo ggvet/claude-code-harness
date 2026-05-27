@@ -41,6 +41,26 @@ EOF
 "$SCRIPT" --json "$TMP_DIR/good.json" > "$TMP_DIR/good.out"
 assert_contains "$TMP_DIR/good.out" "CCH branch protection policy: ok"
 
+cat > "$TMP_DIR/good-checks.json" <<'EOF'
+{
+  "required_pull_request_reviews": null,
+  "required_status_checks": {
+    "strict": true,
+    "contexts": [],
+    "checks": [
+      {"context": "actionlint", "app_id": 15368},
+      {"context": "validate", "app_id": 15368},
+      {"context": "test-go", "app_id": 15368}
+    ]
+  },
+  "allow_force_pushes": false,
+  "allow_deletions": false
+}
+EOF
+
+"$SCRIPT" --json "$TMP_DIR/good-checks.json" > "$TMP_DIR/good-checks.out"
+assert_contains "$TMP_DIR/good-checks.out" "CCH branch protection policy: ok"
+
 cat > "$TMP_DIR/review-required.json" <<'EOF'
 {
   "required_pull_request_reviews": {
