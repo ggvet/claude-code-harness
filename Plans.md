@@ -166,6 +166,40 @@ Spec skip reason: docs / skill prose only。spec.md・support tier・公開 API 
 
 | Task | 内容 | DoD | Depends | Status |
 |------|------|-----|---------|--------|
+| 79.1.1 | `[Contract Freeze]` `[lane:gate]` `[tdd:skip:docs-contract]` Non-trivial planning gate を product contract に追加する。`spec.md` / `docs/plans/spec-ssot.md` / `Plans.md` に、TeamAgent / sub-agent 前提、memory wheel check、product/security/works-in-practice gate、fallback 表記を固定する。 | (a) `spec.md` に Non-trivial planning must be team-validated がある、(b) `docs/plans/spec-ssot.md` に TeamAgent / sub-agent perspectives と wheel check がある、(c) `team_validation_mode` と lightweight / non-trivial mode 境界がある、(d) perspective と agent_type が分離されている、(e) secret read を要求せず Risk Gate にする契約がある、(f) `Plans.md` Phase 79 に Spec delta と検証 task がある、(g) `git diff --check` PASS。Evidence: `git diff --check` PASS; `bash tests/test-spec-ssot-workflow.sh` PASS. | 78.1.6 | cc:done |
+| 79.1.2 | `[Skill Update]` `[lane:gate]` `[tdd:required]` `harness-plan` skill の標準品質契約を更新し、単発・軽微ではない planning で TeamAgent / サブエージェント検証、`spec.md` / `Plans.md` 整合、harness-mem / repo memory、product fit、security fit、works-in-practice を必須出力にする。 | (a) `skills/harness-plan/SKILL.md` が Non-trivial planning gate を持つ、(b) `references/planning-quality.md` が Step 5.5 実装プラン検証ゲートを持つ、(c) `references/create.md` が Step 3 で product/security/works 観点を要求する、(d) `team_validation_mode` の values と `unavailable` Required 禁止が明記される、(e) Product / Architecture / Security / QA / Skeptic は perspective であって agent_type ではない、(f) subagent unavailable fallback が明記される、(g) secret read を必須にしない、(h) mirror sync 後も `.agents`, Codex, OpenCode で同じ契約が見える。Evidence: `bash scripts/sync-skill-mirrors.sh` 実行; `bash scripts/sync-skill-mirrors.sh --check` PASS. | 79.1.1 | cc:done |
+| 79.1.3 | `[Validation / Closeout]` `[lane:gate]` Phase 79 の回帰防止 test を更新して実行する。`harness-plan` が軽微 task 以外で team-backed validation を省略しないこと、Spec / Plans / memory / product / security / works gates を出力契約として持つことを検出する。 | (a) lightweight fixture は `team_validation_mode: not_required_lightweight` で PASS、(b) non-trivial fixture は Spec / Memory / Product / Security / Works gate 欠落で FAIL、(c) OpenCode / Task unavailable fixture は `manual-pass` で PASS、(d) security fixture が `.env` / secrets read を必須行動にしない、(e) `bash tests/test-harness-plan-quality.sh` PASS、(f) `bash tests/test-spec-ssot-workflow.sh` PASS、(g) `bash scripts/sync-skill-mirrors.sh --check` PASS、(h) `bash tests/validate-plugin.sh` PASS、(i) residual risk があれば final / PR body に残る。Evidence: `bash tests/test-harness-plan-quality.sh` PASS; `bash tests/test-spec-ssot-workflow.sh` PASS; `bash scripts/sync-skill-mirrors.sh --check` PASS; `bash tests/validate-plugin.sh` 96/0/0 PASS; `bash scripts/codex-companion.sh review --base origin/main` no actionable issues. | 79.1.2 | cc:done |
+
+---
+
 | 85.1 | `[Wiring SSOT]` Lead → composer 直接委託の正本表記を強化する。`skills/harness-work/SKILL.md` 「Execution Backend Selection」節 (L78-) と「非 `claude` バックエンドの self_review ゲート」節 (L102-) に「非 claude backend では Worker agent (`claude-code-harness:worker`) を spawn せず、Lead が直接 `cursor-companion.sh` / `codex-companion.sh` を呼ぶ。Worker 層介在は backend=claude のときだけ」を明示。`.claude/rules/cursor-cli-only.md` の「Role scope」節にも同等の 1 行を追記し配信可能化する。`.claude/memory/patterns.md` (ローカル SSOT) には Phase 85 学びを Why 付きで記録する (gitignore 対象なので配布外)。[tdd:skip:docs-only] | (a) `skills/harness-work/SKILL.md` + opencode/codex mirror の該当節に「Worker 介在は backend=claude のみ」明示、(b) `.claude/rules/cursor-cli-only.md` Role scope 節に 1 行追記 (配信可能)、(c) `.claude/memory/patterns.md` に Phase 85 entry (ローカル)、(d) `bash scripts/sync-skill-mirrors.sh` 後 `bash scripts/ci/check-consistency.sh` PASS、(e) audit (vague-word grep) 0 件 | - | cc:done [33814e73] |
 | 85.2 | `[Review gate hardening]` Lead 1 次レビューに「目視 diff + contract grep」の二段ゲートを明示する。`skills/harness-work/SKILL.md` のレビューループ節に「cherry-pick 前必須コマンド」テーブルを追加 (`bash tests/test-support-claim-wording.sh` / `bash scripts/ci/check-consistency.sh` / `bash tests/validate-plugin.sh`)。「docs / locale / capability-matrix 等の固定文字列契約は目視 diff では検知できない」根拠と Phase 85 test-run の reference を Why として併記。[tdd:skip:docs-only] | (a) `skills/harness-work/SKILL.md` のレビューループ節 (Review Policy 周辺) に gate テーブル追加、(b) opencode/codex mirror 同期、(c) `bash scripts/ci/check-consistency.sh` PASS、(d) 目視 diff のみで composer 出力を APPROVE しないと明示、(e) audit 合格 | - | cc:done [33814e73] |
 | 85.3 | `[Closeout]` 改善を CHANGELOG `[Unreleased]` に追記し、`/harness-release` 可能な状態にする。Bump は **patch** (`4.13.0` → `4.13.1`、内部 hygiene + skill prose のみ・API/機能不変・後方互換)。[tdd:skip:docs-and-validation] | (a) `CHANGELOG.md` `[Unreleased]` に "Lead → composer 直接委託 (Worker 介在は backend=claude のみ)" と "Lead review に contract-grep ゲート追加" を Documentation/Changed として記載、(b) `bash tests/validate-plugin.sh` PASS、(c) `bash scripts/ci/check-consistency.sh` PASS、(d) mirror 同期済み、(e) `bash tests/test-support-claim-wording.sh` PASS | 85.1, 85.2 | cc:done [e058e3ca] |
+
+---
+
+## Phase 86: Harness Duplication Cleanup [P1]
+
+Purpose: Cursor / Codex / Claude Code で Harness が重複表示される問題を、個人環境の Clean/Compatibility 診断と host-specific 配布 package 分離の2層で解消する。Desktop の Claude/Codex 互換読み込み ON 時は重複再発し得るため、Harness は dry-run 診断とユーザー確認後の archive/disable のみ行う。(本 Phase は元 Phase 82 として作業されたが、Phase 80-84 archive 後の番号衝突回避のため Phase 86 にリナンバーされた。)
+
+| Task | 内容 | DoD | Depends | Status |
+|------|------|-----|---------|--------|
+| 86.1 | `[Contract]` spec / Plans / distribution scope に host distribution と Clean/Compatibility profile を固定する。 | (a) `spec.md` Host Distribution + Clean/Compatibility 節、(b) Phase 86 行、(c) `docs/distribution-scope.md` 更新 | 81.6 | cc:完了 |
+| 86.2 | `[Local Env]` dry-run 診断 docs + helper を追加する。 | (a) `docs/local-harness-environment-cleanup.md`, (b) `scripts/diagnose-harness-skill-duplication.sh` default dry-run, (c) `--apply` なし or confirmation gate | 86.1 | cc:完了 |
+| 86.3 | `[Archive Gate]` Claude archive から `.cursor-plugin/` 混入を防ぐ。 | (a) `.gitattributes`, (b) `tests/test-distribution-archive.sh`, (c) distribution-scope 同期 | 86.1 | cc:完了 |
+| 86.4 | `[Dist Builder]` host-specific dist 生成 script を追加する。 | (a) `scripts/build-host-plugin-dist.sh`, (b) manifest path 正規化, (c) host 別 displayName | 86.3 | cc:完了 |
+| 86.5 | `[Dist Tests]` 混入防止 test + adapter smoke を generated package ベースへ拡張する。 | (a) `tests/test-host-plugin-dist.sh`, (b) codex/cursor adapter test 更新 | 86.4 | cc:完了 |
+| 86.6 | `[Validation]` mirror / validate / release-preflight dry-run を PASS する。 | (a) listed validation commands PASS, (b) `CHANGELOG.md` [Unreleased] | 86.2, 86.3, 86.4, 86.5 | cc:完了 |
+
+---
+
+## Phase 87: Cursor Internal-Compatible Promotion [P1]
+
+Purpose: Cursor adapter を `candidate` から `internal-compatible` へ昇格する。`setup-cursor.sh` インストール経路、host-specific dist 正規化、観測済み Desktop skill-loading 証拠、tier 表記・テスト・preflight gate を Codex CLI / OpenCode と同水準で整える。`supported` 公開 claim は CI-gated workflow smoke まで行わない。(本 Phase は元 Phase 83 として作業されたが、Phase 80-84 archive 後の番号衝突回避のため Phase 87 にリナンバーされた。)
+
+| Task | 内容 | DoD | Depends | Status |
+|------|------|-----|---------|--------|
+| 87.1 | `[tdd:required]` RED: setup-cursor + tier assertion を先に fail させる。 | (a) `test-cursor-adapter-candidate.sh` setup assert 追加で script 未実装 RED、(b) `test-tool-capability-matrix.sh` Cursor=`internal-compatible` で doc 未更新 RED | 86.6 | cc:完了 |
+| 87.2 | `[tdd:required]` GREEN: `scripts/setup-cursor.sh` 実装。 | (a) `--check` dry-run + real copy install、(b) symlink 不可 + `user-invocable` 正規化 dist、(c) `test-cursor-adapter-candidate.sh` PASS | 87.1 | cc:完了 |
+| 87.3 | `[tdd:skip:docs-only]` GREEN: tier doc + runtime 証拠。 | (a) `spec.md` Cursor=`internal-compatible`、(b) `docs/tool-capability-matrix.md` 更新、(c) `cursor-adapter-candidate.md` 2026-05-29 証拠、(d) `test-tool-capability-matrix.sh` PASS | 87.1 | cc:完了 |
+| 87.4 | `[tdd:skip:config-wiring]` Gate / CHANGELOG。 | (a) `release-preflight.sh` setup-cursor gate、(b) `CHANGELOG.md` [Unreleased]、(c) validation commands PASS | 87.2, 87.3 | cc:完了 |

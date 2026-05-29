@@ -15,6 +15,32 @@ Change history for claude-code-harness.
 - **`--no-verify` / `--no-gpg-sign` ガードレールのバイパス修正 (#171)**: R10 ガードレールの検出正規表現が `\s`（空白）のみを境界としていたため、`git commit --no-verify&&echo done` のようにシェルメタ文字（`&&` / `;` / `|` など）を空白なしで続けると検出をすり抜け、pre-commit フックや署名検証を迂回できてしまう問題を修正。境界判定にシェルのトークン区切り文字（`[\s;&|()<>]`）を含めるよう `go/internal/guardrail/helpers.go` を更新し、バイパス系・誤検出防止の回帰テストを追加。
 - **`harness.toml` のバージョン同期ずれを修正 (#178)**: v4.13.1 リリースで `VERSION` と `.claude-plugin/plugin.json` は `4.13.1` に bump されたが `harness.toml` が `4.13.0` のまま残っていた。`harness sync`（`scripts/sync-plugin-cache.sh`）は `harness.toml` から `plugin.json` のバージョンを再生成するため、sync 実行のたびに `plugin.json` が `4.13.0` へ巻き戻り、CI の `validate` ジョブ（`check-consistency.sh` のバージョン一致ゲート）が失敗していた。`harness.toml` を `4.13.1` に揃え、3 点（VERSION / plugin.json / harness.toml）同期を回復。
 
+### Changed
+
+| Before | After |
+| --- | --- |
+| Claude archive could include Cursor adapter metadata. | `.cursor-plugin/` is excluded from Claude distribution archive. |
+| Codex/Cursor adapter manifests used sibling `..` paths in source repo only. | `scripts/build-host-plugin-dist.sh` generates host packages with in-package `./skills/` paths. |
+| Duplicate Harness skill origins had no dry-run diagnostic. | `scripts/diagnose-harness-skill-duplication.sh` and Clean/Compatibility profiles document safe cleanup. |
+| Cursor dropped Harness workflow skills (`user-invocable: true`) so `/breezing`, `/harness-plan` never appeared. | Cursor package normalizes those skills to `user-invocable: false`; Claude package keeps the slash contract. |
+| Cursor local plugin registered via symlink was rejected (target outside `~/.cursor/plugins/local`). | Documented real-directory copy install; symlink route no longer recommended. |
+| Cursor adapter tier remained `candidate` despite observed Desktop skill loading. | Cursor promoted to `internal-compatible` with `scripts/setup-cursor.sh`, runtime evidence doc, and tier gates; public `supported` claim still blocked. |
+
+- **Phase 86 Harness Duplication Cleanup**: Added host-specific dist builder
+  (`scripts/build-host-plugin-dist.sh`), duplication dry-run diagnostic
+  (`scripts/diagnose-harness-skill-duplication.sh`), local cleanup guide
+  (`docs/local-harness-environment-cleanup.md`), archive contamination fix for
+  `.cursor-plugin/`, and `tests/test-host-plugin-dist.sh` with generated-package
+  adapter smoke updates. (Renumbered from Phase 82 to avoid collision with the
+  archived Phase 80-84 numbering space; see Plans.md.)
+
+- **Phase 87 Cursor Internal-Compatible Promotion**: Added `scripts/setup-cursor.sh`
+  (real-directory install + `--check`), promoted Cursor tier to
+  `internal-compatible` in `spec.md` and capability matrix, recorded 2026-05-29
+  Desktop skill-loading evidence, and extended adapter/preflight gates.
+  (Renumbered from Phase 83 to avoid collision with the archived Phase 80-84
+  numbering space; see Plans.md.)
+
 ## [4.13.1] - 2026-05-29
 
 ### Documentation
