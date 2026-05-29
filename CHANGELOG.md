@@ -6,6 +6,10 @@ Change history for claude-code-harness.
 
 ## [Unreleased]
 
+### Fixed
+
+- **`--no-verify` / `--no-gpg-sign` ガードレールのバイパス修正 (#171)**: R10 ガードレールの検出正規表現が `\s`（空白）のみを境界としていたため、`git commit --no-verify&&echo done` のようにシェルメタ文字（`&&` / `;` / `|` など）を空白なしで続けると検出をすり抜け、pre-commit フックや署名検証を迂回できてしまう問題を修正。境界判定にシェルのトークン区切り文字（`[\s;&|()<>]`）を含めるよう `go/internal/guardrail/helpers.go` を更新し、バイパス系・誤検出防止の回帰テストを追加。
+
 ## [4.13.1] - 2026-05-29
 
 ### Documentation
