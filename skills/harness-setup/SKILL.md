@@ -374,8 +374,7 @@ agents/ の3エージェント構成を設定する。
 ```
 agents/
 ├── worker.md      # 実装担当（task-worker + codex-implementer + error-recovery）
-├── reviewer.md    # レビュー担当（code-reviewer + plan-critic）
-└── scaffolder.md  # 足場担当（project-analyzer + scaffolder）
+└── reviewer.md    # レビュー担当（code-reviewer + plan-critic）
 ```
 
 ### localize — ルールローカライズ

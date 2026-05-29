@@ -326,7 +326,7 @@ git switch -c harness-work/<task-id>
 | `no-existing-test-regression` | 既存テストが全て PASS、validate-plugin.sh が PASS | `bash tests/validate-plugin.sh` の最終行 |
 | `tdd-red-evidence-attached` | `tdd.enforce.enabled=true` の時だけ有効。TDD 必須タスクで、実装前に失敗テストを確認した証跡がある | `.claude/state/tdd-red-log/<task-id>.jsonl` の FAIL 記録、または literal failing test output |
 
-project ごとの追加 rule は `harness.toml` の `[worker.self_review]` で override する（scaffolder が雛形を生成）。
+project ごとの追加 rule は `harness.toml` の `[worker.self_review]` で override する（`harness-setup init` が雛形を生成）。
 
 ### Advisor 相談時
 

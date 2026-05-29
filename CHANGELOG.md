@@ -6,6 +6,15 @@ Change history for claude-code-harness.
 
 ## [Unreleased]
 
+### Removed
+
+- **未配線の Scaffolder エージェントを削除 (#170)**: `agents/scaffolder.md` は `analyze` / `scaffolder` / `update-state` の 3 モードを定義していたが、どの skill / hook からも `subagent_type="claude-code-harness:scaffolder"` で spawn される経路が存在せず（worker / reviewer は spawn 経路あり）、登録だけされて使われない dead agent だった。足場生成は `harness-setup` が、状態同期は `harness-plan` が Lead inline で実行しており、setup/plan は対話的フローのため worktree 隔離はむしろ不向き。混乱を避けるためエージェント定義を削除し、hooks の SubagentStart/Stop matcher・docs（team-composition / agent-frontmatter-policy / distribution-scope）・関連テスト・skill mirror の参照を整理。worker / reviewer / advisor の 3 エージェント構成に変更なし。
+
+### Fixed
+
+- **`--no-verify` / `--no-gpg-sign` ガードレールのバイパス修正 (#171)**: R10 ガードレールの検出正規表現が `\s`（空白）のみを境界としていたため、`git commit --no-verify&&echo done` のようにシェルメタ文字（`&&` / `;` / `|` など）を空白なしで続けると検出をすり抜け、pre-commit フックや署名検証を迂回できてしまう問題を修正。境界判定にシェルのトークン区切り文字（`[\s;&|()<>]`）を含めるよう `go/internal/guardrail/helpers.go` を更新し、バイパス系・誤検出防止の回帰テストを追加。
+- **`harness.toml` のバージョン同期ずれを修正 (#178)**: v4.13.1 リリースで `VERSION` と `.claude-plugin/plugin.json` は `4.13.1` に bump されたが `harness.toml` が `4.13.0` のまま残っていた。`harness sync`（`scripts/sync-plugin-cache.sh`）は `harness.toml` から `plugin.json` のバージョンを再生成するため、sync 実行のたびに `plugin.json` が `4.13.0` へ巻き戻り、CI の `validate` ジョブ（`check-consistency.sh` のバージョン一致ゲート）が失敗していた。`harness.toml` を `4.13.1` に揃え、3 点（VERSION / plugin.json / harness.toml）同期を回復。
+
 ## [4.13.1] - 2026-05-29
 
 ### Documentation
