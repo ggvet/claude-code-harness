@@ -44,12 +44,15 @@ skills:
   "context": "プロジェクトコンテキスト",
   "files": ["変更してよいファイル"],
   "mode": "solo | codex | breezing",
+  "backend": "claude | codex | cursor",
   "contract_path": ".claude/state/contracts/<task>.sprint-contract.json",
   "spec_path": "docs/spec/00-project-spec.md|null",
   "spec_skip_reason": "docs-only|mechanical-change|existing-spec-sufficient|null",
   "validation_commands": ["npm test", "npm run build"]
 }
 ```
+
+`backend=claude` の場合はこの agent（worker.md）が直接実装する。`backend=codex` / `backend=cursor` の場合は Lead が companion script（`scripts/codex-companion.sh` / `scripts/cursor-companion.sh`）経由で委託し、この agent を spawn しない。そのため非 `claude` バックエンドでは self_review ゲートは N/A で、Lead の diff レビューが唯一の判定になる。
 
 ## 開始直後の確認
 

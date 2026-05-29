@@ -47,6 +47,60 @@ Harness の統合実行スキル。
 2. **`--codex` は明示時のみ発動**。Codex CLI が未インストールの環境があるため、自動選択しない
 3. `--codex` は他モードと組み合わせ可能: `--codex --breezing` → Codex + Breezing
 
+## Execution Backend Selection（実装バックエンド選択）
+
+バックエンド（どのランタイムが**実装するか**）は、実行モード（トポロジー: solo / parallel / breezing）と直交する。
+実行モードが「何ワーカーで・どう分割して回すか」を決めるのに対し、バックエンドは「実装の手を誰が動かすか」を決める。
+
+| backend | 実装の担い手 | 委託コマンド |
+|---------|------------|------------|
+| `claude`（既定） | Task subagent（`agents/worker.md`） | Agent tool で worker を spawn |
+| `codex` | Codex CLI | `bash "${HARNESS_PLUGIN_ROOT}/scripts/codex-companion.sh" task --write "<prompt>"` |
+| `cursor` | cursor-agent（model `composer-2.5-fast`） | `bash "${HARNESS_PLUGIN_ROOT}/scripts/cursor-companion.sh" task --write --workspace <worktree> "<prompt>"` |
+
+### 解決手順
+
+run 開始時に 1 回だけ解決する:
+
+```bash
+bash "${HARNESS_PLUGIN_ROOT}/scripts/resolve-impl-backend.sh"
+```
+
+precedence（高い順）: `--backend <v>` / `--cursor` / `--codex` フラグ > `HARNESS_IMPL_BACKEND` 環境変数 > `env.local` の同名行 > 既定値 `claude`。
+明示フラグ（`--backend` / `--cursor` / `--codex`）は env / file / default を常に上書きする。
+
+### role-scoped 制約
+
+バックエンドは **role-scoped**。解決済みバックエンドを使うのは実装（worker）ロールだけ。
+Reviewer と Advisor の両ロールは常に brain（`--host claude`、Opus）に固定する。
+Reviewer を cursor / codex バックエンドに routing しない（実装したバックエンドが自分の出力をレビューしてはならない）。
+
+```bash
+# 実装ロールだけ解決済み backend に従う（例: backend=cursor なら composer-2.5-fast を解決）
+bash "${HARNESS_PLUGIN_ROOT}/scripts/model-routing.sh" --host cursor --role worker --field model
+# review / advisor は常に claude（Opus）固定
+bash "${HARNESS_PLUGIN_ROOT}/scripts/model-routing.sh" --host claude --role reviewer --field model
+bash "${HARNESS_PLUGIN_ROOT}/scripts/model-routing.sh" --host claude --role advisor --field model
+```
+
+> モデル名の正本は `model-routing.sh` 側。本ドキュメント中の `composer-2.5-fast` は参照値であり、実際の解決は上記コマンドに従う（drift 防止）。
+
+### 非 `claude` バックエンドの self_review ゲート
+
+backend が `codex` または `cursor` の場合、`worker-report.v1` も `self_review` 配列も生成されない。
+そのため Lead は self_review ゲートを**スキップ**し、Lead の diff レビューを唯一の品質ゲートとする（既存の codex path と同じ扱い）。
+
+### cursor バックエンドの banner（委託前に必須）
+
+backend が `cursor` のとき、Lead は委託前に次の 1 行 banner を必ず出力する:
+
+```
+⚠️ cursor backend: model=composer-2.5-fast / R01-R13 ガードレールは cursor-agent 内部に適用されない / 出力は Lead レビューまで untrusted
+```
+
+cursor の write 委託は専用 `.git` を持つ worktree 内で実行し、Lead が main へ cherry-pick する（cherry-pick 経路で R01-R13 が適用される）。
+ガバナンス詳細は `.claude/rules/cursor-cli-only.md` を参照。
+
 ## オプション
 
 | オプション | 説明 | デフォルト |
@@ -56,6 +110,8 @@ Harness の統合実行スキル。
 | `--parallel N` | 並列ワーカー数 | auto |
 | `--sequential` | 直列実行強制 | - |
 | `--codex` | Codex CLI で実装委託（明示時のみ、自動選択しない） | false |
+| `--backend <claude\|codex\|cursor>` | 明示バックエンド選択（worker ロールのみ適用、precedence 最上位） | claude |
+| `--cursor` | cursor backend（`--codex` と同様、明示時のみ。cursor-agent 未インストール環境があるため自動選択しない） | false |
 | `--plan NAME` | `plans/manifest.json` の named plan を使う | active/default |
 | `--no-commit` | 自動コミット抑制 | false |
 | `--resume <id\|latest>` | 前回セッション再開。長く空いた後は `/recap` 併用を推奨 | - |
