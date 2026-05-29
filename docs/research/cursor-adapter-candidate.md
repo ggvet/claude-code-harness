@@ -169,10 +169,30 @@ sandbox needs the egress path (allowlist preferred over disable). Implication:
 the recommended gatsuri path needs no per-task Risk Gate ack; the bare
 `--sandbox disabled` fallback is the only ack-gated path.
 
-Not yet verified (deferred to 83.3 env-guard): whether `--sandbox enabled`
-*confines* writes to the workspace (blocks writes outside it) like Codex
-workspace-write, or merely auto-approves. Worktree confinement + Lead review
-remain mandatory regardless.
+### Containment / "can it be stopped?" spike (Phase 83.3a follow-up, 2026-05-29)
+
+Verified whether cursor-agent can be *blocked*, with the CC outer Bash sandbox
+disabled (so only cursor-agent's own controls are under test):
+
+| Test | Setup | Result |
+| --- | --- | --- |
+| Write OUTSIDE `--workspace` | `--sandbox enabled --force --workspace W` → write to a path outside `W` | ❌ **NOT blocked** — the file was written. `--sandbox enabled` does **not** confine writes to the workspace. |
+| Write OUTSIDE `--workspace` | `--sandbox disabled --force` → same | Written (no jail, expected). |
+| Write under read-only mode | `--mode ask --force` → create a file inside `W` | ✅ **Blocked** — "Ask モードのため作成できません". `--force` does **not** override `--mode ask`. |
+
+Corrected conclusions (supersedes the assumption that `--sandbox enabled`
+equals Codex `workspace-write`):
+
+1. cursor-agent's `--sandbox enabled` is **not** a filesystem confinement boundary;
+   `--workspace` only sets the cwd, not a write jail.
+2. The reliable hard "stop" is `--mode ask` / `--mode plan` (read-only, not
+   overridable by `--force`) — use it for read-only/plan delegation.
+3. For WRITE delegation, confinement must come from the **CC outer Bash sandbox**
+   (network = allowlist Cursor egress, filesystem write = restrict to the
+   worktree), not from cursor-agent's own sandbox. Whether cursor-agent functions
+   while FS-confined by the outer sandbox is a follow-up verification (Phase 83.3b).
+4. Worktree (dedicated `.git`) + Lead diff review + cherry-pick remain mandatory
+   regardless, because cursor-agent self-confinement cannot be relied on.
 
 ## Promotion Conditions
 
