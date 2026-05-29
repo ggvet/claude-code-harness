@@ -27,7 +27,7 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(cd "$(dirname "$0")/.." && pwd)")"
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || (cd "$(dirname "$0")/.." && pwd))"
 ENV_LOCAL="${HARNESS_ENV_LOCAL:-${REPO_ROOT}/env.local}"
 USER_FILE="${HARNESS_USER_BACKEND_FILE:-${HOME}/.config/claude-harness/impl-backend.env}"
 KEY="HARNESS_IMPL_BACKEND"
@@ -87,7 +87,7 @@ fi
 if [ -f "${ENV_LOCAL}" ]; then
   file_line="$(grep -E "^export ${KEY}=" "${ENV_LOCAL}" 2>/dev/null | tail -1 || true)"
   if [ -n "${file_line}" ]; then
-    file_value="${file_line#export ${KEY}=}"
+    file_value="${file_line#export "${KEY}"=}"
     if is_valid_backend "${file_value}"; then
       echo "${file_value}"
       exit 0
@@ -102,7 +102,7 @@ fi
 if [ -f "${USER_FILE}" ]; then
   user_line="$(grep -E "^export ${KEY}=" "${USER_FILE}" 2>/dev/null | tail -1 || true)"
   if [ -n "${user_line}" ]; then
-    user_value="${user_line#export ${KEY}=}"
+    user_value="${user_line#export "${KEY}"=}"
     if is_valid_backend "${user_value}"; then
       echo "${user_value}"
       exit 0
