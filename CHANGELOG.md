@@ -6,6 +6,10 @@ Change history for claude-code-harness.
 
 ## [Unreleased]
 
+### Fixed
+
+- **`harness.toml` のバージョン同期ずれを修正**: v4.13.1 リリースで `VERSION` と `.claude-plugin/plugin.json` は `4.13.1` に bump されたが `harness.toml` が `4.13.0` のまま残っていた。`harness sync`（`scripts/sync-plugin-cache.sh`）は `harness.toml` から `plugin.json` のバージョンを再生成するため、sync 実行のたびに `plugin.json` が `4.13.0` へ巻き戻り、CI の `validate` ジョブ（`check-consistency.sh` のバージョン一致ゲート）が失敗していた。`harness.toml` を `4.13.1` に揃え、3 点（VERSION / plugin.json / harness.toml）同期を回復。
+
 ## [4.13.1] - 2026-05-29
 
 ### Documentation
