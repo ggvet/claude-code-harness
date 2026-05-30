@@ -41,6 +41,7 @@ commit / push / release は既定では行わない。
 | `/harness-review --quick` | `quick` | 小さな dirty change を軽く closeout |
 | `/harness-review --codex-closeout` | `codex-closeout` | Codex 助言 + focused tests で closeout |
 | `/harness-review --dual` | `dual` | Claude + Codex second opinion |
+| `/harness-review --cursor` | `cursor-second-opinion` | cursor (composer-2.5-fast) を second-opinion として並走 (read = lean、Opus reviewer 必須併走) |
 | `/harness-review --team-debate` | `team-debate` | TeamAgent Debate を強制 |
 | `/harness-review --security` | `security` | security 専用 review |
 | `/harness-review plan` | `plan` | `Plans.md` の計画 review |
@@ -56,6 +57,7 @@ commit / push / release は既定では行わない。
 | `--quick` | `quick` | `references/codex-closeout.md`, `references/code-review.md` |
 | `--codex-closeout` | `codex-closeout` | `references/codex-closeout.md` |
 | `--dual` | `dual` | `references/dual-review.md`, `references/team-debate.md` |
+| `--cursor` | `cursor-second-opinion` | `references/cursor-review.md`, `references/dual-review.md` |
 | `--team-debate` | `team-debate` | `references/team-debate.md`, `references/governance.md` |
 | `--security` | `security` | `references/security-profile.md`, `references/governance.md` |
 | `--ui-rubric` | `ui-rubric` | `references/ui-rubric.md` |
