@@ -14,7 +14,8 @@
 
 - **Name:** Chachamaru
 - **GitHub:** https://github.com/Chachamaru127
-- **Email:** hhcjapan.cannabis@gmail.com
+- **Email:** _<fill in your contact email when submitting the form>_ (kept out of the
+  public repo to avoid permanently publishing a personal address)
 - **Role on the project:** Creator and sole core maintainer (owner of the repository,
   author of every release).
 
@@ -46,9 +47,10 @@ pluggable* — Codex is one of the selectable engines, not an afterthought.
 
 ## Adoption & maintenance signals（採用・メンテナンス実績）
 
-- ⭐ **2,228 stars**, 🍴 **223 forks** (public, MIT-licensed).
+- ⭐ **2,228 stars**, 🍴 **223 forks** (public, MIT-licensed) — _as of 2026-05-30_.
 - **Actively maintained:** created 2025-12, with frequent tagged releases — multiple
-  releases per week (e.g. v4.13.0 → v4.13.1 → v4.13.2 across 2026-05-29 → 2026-05-30).
+  releases per week (e.g. v4.13.0 → v4.13.1 → v4.13.2 across 2026-05-29 → 2026-05-30,
+  _as of 2026-05-30_).
 - Distributed for three agent ecosystems from a single source of truth: Claude Code
   (`.claude-plugin/`), **Codex CLI** (`.codex-plugin/plugin.json` + mirrored skills under
   `codex/.codex/skills/`), and OpenCode.
@@ -112,7 +114,7 @@ maintainers can copy.
 | Project | Claude Code Harness |
 | Repo | https://github.com/Chachamaru127/claude-code-harness |
 | License | MIT |
-| Stars / Forks | 2,228 / 223 |
+| Stars / Forks | 2,228 / 223 (as of 2026-05-30) |
 | Maintainer | Chachamaru (https://github.com/Chachamaru127) |
 | Existing Codex usage | Selectable backend, PR review, adversarial review, Codex CLI plugin distribution, benchmarks |
 | Intended Codex use | PR review · maintainer automation · release workflows · self-hosted dogfooding |
