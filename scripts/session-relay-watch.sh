@@ -28,6 +28,8 @@ command -v jq >/dev/null 2>&1 || exit 0
 
 INTERVAL="${HARNESS_SESSION_RELAY_INTERVAL:-5}"
 case "$INTERVAL" in ''|*[!0-9]*) INTERVAL=5 ;; esac
+# Clamp 0 (and anything <1) to 1s — sleep 0 in the persistent loop is a CPU spin.
+[ "$INTERVAL" -ge 1 ] 2>/dev/null || INTERVAL=1
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/lib/relay-store.sh

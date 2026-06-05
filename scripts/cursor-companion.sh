@@ -354,6 +354,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# opt-in: notify a peer CC session of this cross-agent handoff BEFORE the blocking
+# cursor-agent run, so the peer can observe the handoff while the task is active.
+relay_notify "cursor" "task" "${WRITE}" || true
 __orch_start_ms="$(__orch_now_ms 2>/dev/null || echo 0)"
 set +e
 "${cmd[@]}" >"${OUT_FILE}" 2>"${ERR_FILE}"
@@ -365,8 +368,6 @@ set -e
 __orch_dur_ms=$(( $(__orch_now_ms 2>/dev/null || echo 0) - __orch_start_ms ))
 [ "${__orch_dur_ms}" -ge 0 ] 2>/dev/null || __orch_dur_ms=0
 orch_emit_ledger "cursor" "task" "${WRITE}" "${rc}" "${__orch_dur_ms}" || true
-# opt-in: notify a peer CC session of this cross-agent handoff (redacted).
-relay_notify "cursor" "task" "${WRITE}" || true
 
 # (1) exit code を最優先で確認。cursor-agent はエラー時 stdout に JSON を出さない。
 if [ "${rc}" -ne 0 ]; then
