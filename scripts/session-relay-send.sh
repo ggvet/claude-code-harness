@@ -33,8 +33,7 @@ mkdir -p "$SESSIONS_DIR" 2>/dev/null || true
 chmod 0700 "$SESSIONS_DIR" 2>/dev/null || true
 if [ -L "$SIGNALS" ]; then echo "Error: relay signal file is a symlink, refusing" >&2; exit 1; fi
 if [ ! -f "$SIGNALS" ]; then
-  : > "$SIGNALS" 2>/dev/null || true
-  chmod 0600 "$SIGNALS" 2>/dev/null || true
+  ( umask 0177; : >> "$SIGNALS" ) 2>/dev/null || true
 fi
 
 TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"

@@ -101,6 +101,12 @@ func HandleRelayPoll(in io.Reader, out io.Writer) error {
 	data, _ := io.ReadAll(in)
 	var inp relayHookInput
 	_ = json.Unmarshal(data, &inp)
+	// Top-level only: the * matcher also fires for subagent tool calls when hooks
+	// are inherited; never inject relay into a subagent (same guard as
+	// HandleSessionRelayStart). See codex review 8周目 P2.
+	if inp.AgentType == "subagent" {
+		return nil
+	}
 	if inp.SessionID == "" {
 		return nil
 	}
