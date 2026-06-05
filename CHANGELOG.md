@@ -6,6 +6,10 @@ Change history for claude-code-harness.
 
 ## [Unreleased]
 
+### Fixed
+
+- Cursor アダプタ evidence ドキュメント（`docs/research/cursor-adapter-candidate.md`）の tier 表記を `internal-compatible` に復元。PR #174 の昇格マージで evidence ファイル分の hunk が脱落し、`release-preflight.sh` の cursor adapter candidate smoke が FAIL していたのを修正（README / onboarding / テストは既に `internal-compatible` で整合済みだった）。
+
 ## [4.15.0] - 2026-06-05
 
 ### テーマ: settings 自己書換保護を配布物まで届ける
