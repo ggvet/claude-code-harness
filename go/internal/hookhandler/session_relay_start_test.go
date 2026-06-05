@@ -131,3 +131,20 @@ func TestHandleRelayPoll_Integration(t *testing.T) {
 		t.Errorf("expected untrusted-data disclaimer, got: %s", got)
 	}
 }
+
+// TestShellSingleQuote fixes codex 4周目 P1: the monitor directive must use
+// shell single-quoting so $()/backtick in a project path can't be expanded.
+func TestShellSingleQuote(t *testing.T) {
+	cases := []struct{ in, want string }{
+		{"plain", "'plain'"},
+		{"$(whoami)", "'$(whoami)'"},
+		{"`id`", "'`id`'"},
+		{"a'b", `'a'\''b'`},
+		{"/My Projects/foo", "'/My Projects/foo'"},
+	}
+	for _, c := range cases {
+		if got := shellSingleQuote(c.in); got != c.want {
+			t.Errorf("shellSingleQuote(%q) = %q, want %q", c.in, got, c.want)
+		}
+	}
+}

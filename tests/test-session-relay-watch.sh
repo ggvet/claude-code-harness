@@ -80,6 +80,16 @@ newline' "$repo"
         || { echo "FAIL test7: cross-worktree relay not shared via git common-dir" >&2; fail=1; }
     fi
   fi
+
+  # test 8: send refuses a symlinked signal file (codex 4周目 P2a — an untrusted
+  # repo must not be able to redirect relay writes to an arbitrary file).
+  symrepo="${tmp}/symrepo"; mkdir -p "${symrepo}/.claude/sessions"
+  target="${tmp}/evil-target"; : > "$target"
+  ln -sf "$target" "${symrepo}/.claude/sessions/relay-signals.jsonl"
+  bash "$SEND" "peerEEEEEEEE" "$S12" "evil-body" "$symrepo" 2>/dev/null || true
+  if grep -q "evil-body" "$target" 2>/dev/null; then
+    echo "FAIL test8: send followed a symlinked signal file" >&2; fail=1
+  fi
 else
   echo "FAIL: ${SEND} not found (TDD red expected before send impl)" >&2
   fail=1

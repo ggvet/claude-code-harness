@@ -74,6 +74,10 @@ poll_once() {
     from="$(printf '%s' "$line" | jq -r '.from // ""' 2>/dev/null || true)"
     [ "$from" = "$SELF" ] && continue      # self-echo guard
     body="$(printf '%s' "$line" | jq -r '.body // ""' 2>/dev/null || true)"
+    # Sanitize/cap the untrusted body before streaming to Monitor: strip control
+    # chars, collapse newlines to spaces, cap length (one-line + byte-cap contract).
+    body="$(printf '%s' "$body" | tr -d '\000-\010\013\014\016-\037' | tr '\n\r' '  ')"
+    body="${body:0:2048}"
     ts="$(printf '%s' "$line" | jq -r '.ts // ""' 2>/dev/null || true)"
     printf '%s | %s → %s | %s\n' "$ts" "$from" "$to" "$body"
   done

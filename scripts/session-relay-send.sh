@@ -25,10 +25,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # same relay-signals.jsonl this send writes to.
 SESSIONS_DIR="$(relay_sessions_dir "$PROJECT")"
 SIGNALS="${SESSIONS_DIR}/relay-signals.jsonl"
+# Refuse symlinks: the store lives under a checked-out project, so an untrusted
+# repo could symlink the dir/file to make opt-in relay sends mutate other files.
+if [ -L "$SESSIONS_DIR" ]; then echo "Error: relay store dir is a symlink, refusing" >&2; exit 1; fi
 mkdir -p "$SESSIONS_DIR" 2>/dev/null || true
-# Owner-only (0700/0600), matching the lease store — relay bodies and session
-# ids must not be readable by other local users on shared machines.
+# Owner-only (0700/0600), matching the lease store.
 chmod 0700 "$SESSIONS_DIR" 2>/dev/null || true
+if [ -L "$SIGNALS" ]; then echo "Error: relay signal file is a symlink, refusing" >&2; exit 1; fi
 if [ ! -f "$SIGNALS" ]; then
   : > "$SIGNALS" 2>/dev/null || true
   chmod 0600 "$SIGNALS" 2>/dev/null || true
