@@ -64,6 +64,22 @@ if [ -f "$SEND" ]; then
   bash "$SEND" "$PEER" "$SELF" 'quote"and
 newline' "$repo"
   expect_emit "$(bash "$WATCH" "$SELF" "$repo" --once)" "quote" "test6: send escapes special chars"
+
+  # test 7: cross-worktree storage sharing via git common-dir (codex P2 regression).
+  # send from the main repo, watch from a linked worktree → both resolve to the
+  # same relay-signals.jsonl under the git common-dir parent.
+  if command -v git >/dev/null 2>&1; then
+    mainrepo="${tmp}/mainrepo"; mkdir -p "$mainrepo"
+    git -C "$mainrepo" init -q 2>/dev/null
+    git -C "$mainrepo" -c user.email=t@t -c user.name=t commit --allow-empty -q -m init 2>/dev/null || true
+    wt="${tmp}/wt7"
+    if git -C "$mainrepo" worktree add -q "$wt" 2>/dev/null; then
+      bash "$SEND" "peerDDDDDDDD" "$S12" "cross-wt-body" "$mainrepo"
+      out7="$(bash "$WATCH" "$SELF" "$wt" --once)"
+      echo "$out7" | grep -q "cross-wt-body" \
+        || { echo "FAIL test7: cross-worktree relay not shared via git common-dir" >&2; fail=1; }
+    fi
+  fi
 else
   echo "FAIL: ${SEND} not found (TDD red expected before send impl)" >&2
   fail=1

@@ -94,6 +94,18 @@ func TestHandleRelayPoll_Integration(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(scriptsDir, "session-relay-watch.sh"), watchSrc, 0o755); err != nil {
 		t.Fatal(err)
 	}
+	// watch.sh sources scripts/lib/relay-store.sh — copy that dependency too.
+	libDir := filepath.Join(scriptsDir, "lib")
+	if err := os.MkdirAll(libDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	storeSrc, err := os.ReadFile(filepath.Join("..", "..", "..", "scripts", "lib", "relay-store.sh"))
+	if err != nil {
+		t.Skipf("relay-store.sh not found: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(libDir, "relay-store.sh"), storeSrc, 0o644); err != nil {
+		t.Fatal(err)
+	}
 	sessDir := filepath.Join(tmp, ".claude", "sessions")
 	if err := os.MkdirAll(sessDir, 0o755); err != nil {
 		t.Fatal(err)
@@ -105,6 +117,7 @@ func TestHandleRelayPoll_Integration(t *testing.T) {
 	}
 
 	t.Setenv("HARNESS_PROJECT_ROOT", tmp)
+	t.Setenv("CLAUDE_PLUGIN_ROOT", "") // force relayWatcherPath fallback to the temp project's watcher
 	t.Setenv("HARNESS_SESSION_RELAY", "both")
 	var out bytes.Buffer
 	if err := HandleRelayPoll(strings.NewReader(`{"session_id":"selfAAAAAAAA99"}`), &out); err != nil {

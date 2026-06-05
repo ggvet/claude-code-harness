@@ -29,7 +29,12 @@ command -v jq >/dev/null 2>&1 || exit 0
 INTERVAL="${HARNESS_SESSION_RELAY_INTERVAL:-5}"
 case "$INTERVAL" in ''|*[!0-9]*) INTERVAL=5 ;; esac
 
-SESSIONS_DIR="${PROJECT}/.claude/sessions"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/relay-store.sh
+. "${SCRIPT_DIR}/lib/relay-store.sh"
+# Shared store (git common-dir parent) so peer worktrees of the same repo read
+# and write one relay-signals.jsonl — the only way cross-worktree relay works.
+SESSIONS_DIR="$(relay_sessions_dir "$PROJECT")"
 SIGNALS="${SESSIONS_DIR}/relay-signals.jsonl"
 SELF="${SESSION_ID:0:12}"
 MARK="${SESSIONS_DIR}/.relay-watch-mark.${SELF}"

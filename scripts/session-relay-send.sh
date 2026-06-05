@@ -18,7 +18,12 @@ PROJECT="${4:-$(pwd)}"
 
 command -v jq >/dev/null 2>&1 || { echo "Error: jq is required for relay send" >&2; exit 1; }
 
-SESSIONS_DIR="${PROJECT}/.claude/sessions"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/relay-store.sh
+. "${SCRIPT_DIR}/lib/relay-store.sh"
+# Shared store (git common-dir parent) so a peer worktree's watcher reads the
+# same relay-signals.jsonl this send writes to.
+SESSIONS_DIR="$(relay_sessions_dir "$PROJECT")"
 SIGNALS="${SESSIONS_DIR}/relay-signals.jsonl"
 mkdir -p "$SESSIONS_DIR" 2>/dev/null || true
 
