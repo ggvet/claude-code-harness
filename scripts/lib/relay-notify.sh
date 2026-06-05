@@ -16,8 +16,8 @@
 relay_notify() {
   local backend="${1:-}" subcommand="${2:-}" write="${3:-0}"
   case "${HARNESS_SESSION_RELAY:-off}" in
-    both|turn) ;;
-    *) return 0 ;;   # opt-in, default OFF
+    monitor|both|turn) ;;   # monitor is an enabling mode too (starts the peer watcher)
+    *) return 0 ;;          # opt-in, default OFF
   esac
   local to="${HARNESS_RELAY_TO:-}"
   # CC exposes the Bash subprocess session id as CLAUDE_CODE_SESSION_ID; keep

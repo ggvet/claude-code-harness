@@ -41,6 +41,8 @@ MARK="${SESSIONS_DIR}/.relay-watch-mark.${SELF}"
 PIDFILE="${SESSIONS_DIR}/.relay-watch.${SELF}.pid"
 
 mkdir -p "$SESSIONS_DIR" 2>/dev/null || true
+# Owner-only store dir (0700), matching the lease store and session-relay-send.sh.
+chmod 0700 "$SESSIONS_DIR" 2>/dev/null || true
 
 read_mark() {
   local v

@@ -26,6 +26,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SESSIONS_DIR="$(relay_sessions_dir "$PROJECT")"
 SIGNALS="${SESSIONS_DIR}/relay-signals.jsonl"
 mkdir -p "$SESSIONS_DIR" 2>/dev/null || true
+# Owner-only (0700/0600), matching the lease store — relay bodies and session
+# ids must not be readable by other local users on shared machines.
+chmod 0700 "$SESSIONS_DIR" 2>/dev/null || true
+if [ ! -f "$SIGNALS" ]; then
+  : > "$SIGNALS" 2>/dev/null || true
+  chmod 0600 "$SIGNALS" 2>/dev/null || true
+fi
 
 TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 FROM12="${FROM:0:12}"

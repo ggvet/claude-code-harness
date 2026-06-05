@@ -69,6 +69,21 @@ else
   echo "FAIL test5: CLAUDE_CODE_SESSION_ID fallback did not write a signal" >&2; fail=1
 fi
 
+# test 6: monitor mode also enables send (codex 3周目 P2a — monitor is an enabling mode).
+rm -f "$SIG"
+HARNESS_SESSION_RELAY=monitor HARNESS_RELAY_TO=peerXXXXXXXX HARNESS_RELAY_FROM=selfYYYYYYYY \
+  relay_notify codex task 1
+[ -f "$SIG" ] || { echo "FAIL test6: monitor mode must enable companion send" >&2; fail=1; }
+
+# test 7: the signal file is owner-only (codex 3周目 P2b — 0600).
+if [ -f "$SIG" ]; then
+  perm="$(stat -f '%Lp' "$SIG" 2>/dev/null || stat -c '%a' "$SIG" 2>/dev/null || echo '')"
+  case "$perm" in
+    600|'') ;;  # 600 expected; empty = stat unsupported, skip the assertion
+    *) echo "FAIL test7: relay-signals.jsonl must be 0600, got $perm" >&2; fail=1 ;;
+  esac
+fi
+
 if [ "$fail" = "0" ]; then
   echo "PASS: relay-notify — gate + addressing + structural redaction"
 else
