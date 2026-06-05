@@ -42,9 +42,15 @@ SELF="${SESSION_ID:0:12}"
 MARK="${SESSIONS_DIR}/.relay-watch-mark.${SELF}"
 PIDFILE="${SESSIONS_DIR}/.relay-watch.${SELF}.pid"
 
+# Refuse symlinks (same guard as session-relay-send.sh): an untrusted repo could
+# symlink the store dir or state files to redirect chmod/writes outside the project.
+if [ -L "$SESSIONS_DIR" ]; then echo "Error: relay store dir is a symlink, refusing" >&2; exit 1; fi
 mkdir -p "$SESSIONS_DIR" 2>/dev/null || true
 # Owner-only store dir (0700), matching the lease store and session-relay-send.sh.
 chmod 0700 "$SESSIONS_DIR" 2>/dev/null || true
+for __f in "$MARK" "$PIDFILE"; do
+  [ -L "$__f" ] && { echo "Error: relay state file is a symlink, refusing" >&2; exit 1; }
+done
 
 read_mark() {
   local v
