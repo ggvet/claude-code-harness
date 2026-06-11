@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Chachamaru127/claude-code-harness/go/internal/scaffold"
 )
 
 func TestMain(m *testing.M) {
@@ -43,6 +45,15 @@ func assertSetupOutput(t *testing.T, output, wantSubstr string) {
 }
 
 func TestHandleSetupHookInit_EmptyInput(t *testing.T) {
+	// runSetupInit は CWD にファイルを生成するため、パッケージディレクトリを
+	// 汚さないよう一時ディレクトリへ移動して実行する。
+	dir := t.TempDir()
+	origWD, _ := os.Getwd()
+	if err := os.Chdir(dir); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chdir(origWD)
+
 	var out bytes.Buffer
 	err := HandleSetupHookInit(strings.NewReader(""), &out)
 	if err != nil {
@@ -87,6 +98,63 @@ func TestHandleSetupHookInit_CreatesStateDir(t *testing.T) {
 	stateDir := filepath.Join(dir, ".claude", "state")
 	if info, err := os.Stat(stateDir); err != nil || !info.IsDir() {
 		t.Errorf(".claude/state/ was not created at %s", stateDir)
+	}
+}
+
+// TestHandleSetupHookInit_CreatesHarnessToml は Setup hook の init が
+// `harness sync` の入力となる harness.toml を生成することを確認する (#201)。
+func TestHandleSetupHookInit_CreatesHarnessToml(t *testing.T) {
+	dir := t.TempDir()
+	origWD, _ := os.Getwd()
+	if err := os.Chdir(dir); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chdir(origWD)
+
+	var out bytes.Buffer
+	if err := HandleSetupHookInit(strings.NewReader(""), &out); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	data, err := os.ReadFile(filepath.Join(dir, "harness.toml"))
+	if err != nil {
+		t.Fatalf("harness.toml was not created: %v", err)
+	}
+	if string(data) != scaffold.HarnessTomlTemplate {
+		t.Errorf("harness.toml content does not match scaffold.HarnessTomlTemplate")
+	}
+	assertSetupOutput(t, out.String(), "harness.toml 生成完了")
+}
+
+// TestHandleSetupHookInit_PreservesExistingHarnessToml は既存の harness.toml を
+// 上書きしないことを確認する。
+func TestHandleSetupHookInit_PreservesExistingHarnessToml(t *testing.T) {
+	dir := t.TempDir()
+	origWD, _ := os.Getwd()
+	if err := os.Chdir(dir); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chdir(origWD)
+
+	existing := "[project]\nname = \"user-edited\"\n"
+	if err := os.WriteFile(filepath.Join(dir, "harness.toml"), []byte(existing), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	var out bytes.Buffer
+	if err := HandleSetupHookInit(strings.NewReader(""), &out); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	data, err := os.ReadFile(filepath.Join(dir, "harness.toml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(data) != existing {
+		t.Errorf("existing harness.toml was overwritten:\ngot:  %q\nwant: %q", data, existing)
+	}
+	if strings.Contains(out.String(), "harness.toml 生成完了") {
+		t.Errorf("output should not report harness.toml creation when it already exists: %s", out.String())
 	}
 }
 

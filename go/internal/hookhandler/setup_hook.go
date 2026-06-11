@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Chachamaru127/claude-code-harness/go/internal/harnessmem"
+	"github.com/Chachamaru127/claude-code-harness/go/internal/scaffold"
 )
 
 // setupInput は Setup フックの stdin JSON ペイロード。
@@ -190,6 +191,14 @@ func runSetupInit(out io.Writer, scriptDir string, simpleMode bool) error {
 			if err := copyFile(templatePath, configFile); err == nil {
 				messages = append(messages, "設定ファイル生成完了")
 			}
+		}
+	}
+
+	// 3.5. harness.toml の生成（`harness sync` の入力ファイル。
+	// これがないと Setup hook 後の auto-bootstrap で sync が失敗する）
+	if !fileExists("harness.toml") {
+		if err := os.WriteFile("harness.toml", []byte(scaffold.HarnessTomlTemplate), 0o644); err == nil {
+			messages = append(messages, "harness.toml 生成完了")
 		}
 	}
 
