@@ -10,7 +10,7 @@ Change history for claude-code-harness.
 
 #### P35 footer が i18n.language を無視して日本語固定だった問題（#208）
 
-**今まで**: `harness-review` / `harness-release` の結論時 footer（「止まったように見える」UX 対策の instruction line）が日本語 literal のハードコードで、`i18n.language` / `CLAUDE_CODE_HARNESS_LANG` を `ko` 等に設定しても必ず日本語が出力されていました。同じ SKILL.md の「出力言語は configured language に従う」ルールとも矛盾していました。
+**今まで**: `harness-review` / `harness-release` の結論時 footer（「止まったように見える」UX 対策の instruction line）が日本語 literal のハードコードで、`i18n.language` / `CLAUDE_CODE_HARNESS_LANG` を `ko` 等に設定しても必ず日本語が出力されていました。同じ SKILL.md の Output Contract（user-facing prose は explicit session / project language に従い、未設定なら English）とも矛盾していました。
 
 **今後**: footer は本文（user-facing prose）と同じ言語で出力されます。言語解決は既存の言語ルール（explicit session / project language、未設定なら English）に一本化され、footer 契約が言語を再定義することはありません。ja / en の canonical literal を SKILL.md に定義し、その他の言語では同義の 1 行を本文と同じ言語で出力します。governance テストには en literal の回帰ゲートを追加しました。
 
